@@ -15,13 +15,22 @@ def audit(
     project_id: str = typer.Option(..., "--project", "-p", help="GCP Project ID"),
     cluster_name: str = typer.Option(..., "--cluster", "-c", help="GKE Cluster Name"),
     location: str = typer.Option(..., "--location", "-l", help="GKE Region or Zone"),
-    output_format: str = typer.Option("table", "--format", "-f", help="Output format: table, json, md"),
+    output_format: str = typer.Option(
+        "table",
+        "--format",
+        "-f",
+        help="Output format: table, json, md",
+    ),
 ) -> None:
     """Run CIS benchmark audit against a GKE cluster."""
-    console.print(f"[bold green]Starting CIS GKE Security Audit[/bold green]")
-    console.print(f"Project: [cyan]{project_id}[/cyan] | Cluster: [cyan]{cluster_name}[/cyan] ({location})")
+    console.print("[bold green]Starting CIS GKE Security Audit[/bold green]")
+    console.print(
+        f"Project: [cyan]{project_id}[/cyan] | Cluster: [cyan]{cluster_name}[/cyan] ({location})"
+    )
     console.print(f"Format: [yellow]{output_format}[/yellow]")
-    console.print("[dim]Audit engine initialized. Ready to execute collectors and evaluation rules.[/dim]")
+    console.print(
+        "[dim]Audit engine initialized. Ready to execute collectors and evaluation rules.[/dim]"
+    )
 
 
 @app.command()
