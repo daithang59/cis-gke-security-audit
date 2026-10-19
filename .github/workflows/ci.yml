@@ -2,24 +2,82 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
   pull_request:
-    branches: [ main, master ]
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-  lint-and-test:
+  terraform-checks:
+    name: terraform-checks
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11", "3.12"]
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.5"
+          terraform_wrapper: false
+
+      - name: Terraform Format Check
+        run: |
+          echo "==> Kiểm tra định dạng mã nguồn Terraform toàn bộ repository..."
+          terraform fmt -check -recursive
+
+      - name: Validate Root Modules
+        run: |
+          set -euo pipefail
+
+          ROOT_MODULES=(
+            "terraform/bootstrap"
+            "terraform/shared"
+            "terraform/standard"
+            "terraform/autopilot"
+          )
+
+          echo "==> Bắt đầu kiểm tra các root modules Terraform..."
+          for dir in "${ROOT_MODULES[@]}"; do
+            echo "------------------------------------------------------------"
+            echo "Kiểm tra thư mục module: $dir"
+
+            if [ ! -d "$dir" ]; then
+              echo "Cảnh báo: Thư mục $dir không tồn tại."
+              continue
+            fi
+
+            # Đếm số lượng file .tf trong thư mục
+            TF_COUNT=$(find "$dir" -maxdepth 1 -name "*.tf" | wc -l)
+
+            if [ "$TF_COUNT" -gt 0 ]; then
+              echo "Tìm thấy $TF_COUNT file .tf trong $dir. Tiến hành init và validate..."
+              echo "--> Chạy: terraform init -backend=false -input=false"
+              terraform -chdir="$dir" init -backend=false -input=false
+              echo "--> Chạy: terraform validate"
+              terraform -chdir="$dir" validate
+              echo "Đã xác thực thành công module: $dir"
+            else
+              echo "LƯU Ý: Thư mục $dir chưa có file .tf để validate; bỏ qua bước kiểm tra cấu hình (chưa có cấu hình hạ tầng để kiểm thử)."
+            fi
+          done
+
+  python-checks:
+    name: python-checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -28,8 +86,15 @@ jobs:
 
       - name: Run Ruff Lint
         run: |
+          echo "==> Chạy Ruff check..."
           ruff check .
 
-      - name: Run Tests
+      - name: Run Ruff Format Check
         run: |
-          pytest --cov=src/cis_gke_audit tests/
+          echo "==> Chạy Ruff format check..."
+          ruff format --check .
+
+      - name: Run Pytest
+        run: |
+          echo "==> Chạy Pytest..."
+          pytest -v

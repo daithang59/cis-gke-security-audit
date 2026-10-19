@@ -1,15 +1,89 @@
-# Global default owners
-* @team-lead
+# ==============================================================================
+# GitHub CODEOWNERS - CIS GKE Security Audit Project
+# ==============================================================================
+# HƯỚNG DẪN DÀNH CHO ĐỘI NGŨ DỰ ÁN:
+# 1. THAY THẾ PLACEHOLDER USERNAMES:
+#    Vui lòng thay thế các username mẫu dưới đây bằng GitHub username thực tế:
+#    - @team-lead      : Trưởng dự án / Tech Lead
+#    - @devops-lead-a  : Thành viên A (Cloud, Terraform, CI/WIF Lead)
+#    - @audit-lead-b   : Thành viên B (Python Audit Engine, CLI, Reporter Lead)
+#    - @sec-lead-c     : Thành viên C (CIS Security, Labs, Remediation Lead)
+#
+# 2. LƯU Ý VỀ GIỚI HẠN TÍNH NĂNG TRÊN GITHUB PRIVATE FREE:
+#    - Trên gói GitHub Free cho Private Repository, tính năng cưỡng chế phê duyệt
+#      bắt buộc ("Require review from Code Owners" trong Branch Protection Rules)
+#      không khả dụng (chỉ hỗ trợ trên Public Repos hoặc GitHub Team/Enterprise).
+#    - Tuy nhiên, GitHub vẫn tự động gán (assign) các thành viên được chỉ định
+#      trong file này vào danh sách Reviewers khi mở Pull Request.
+#    - Đội ngũ coi đây là "Thỏa ước kỷ luật nhóm" (Social Contract): Bắt buộc
+#      phải có sự đồng thuận (Approve) từ các vai trò liên quan trước khi Merge.
+#      Người tạo PR tuyệt đối không tự merge mã nguồn của mình.
+# ==============================================================================
 
-# Role A: Infrastructure & GCP Collectors
-/terraform/ @team-lead @role-a
-/src/cis_gke_audit/collectors/gcp/ @role-a
+# Mặc định toàn bộ repository cần ít nhất 2 người phụ trách chung rà soát
+* @team-lead @audit-lead-b
 
-# Role B: Core Audit Framework & CLI
-/src/cis_gke_audit/ @role-b
-/tests/ @role-b
+# ------------------------------------------------------------------------------
+# 1. HẠ TẦNG GOOGLE CLOUD & TERRAFORM (Role A phụ trách chính, B & Team Lead review)
+# ------------------------------------------------------------------------------
+/terraform/                                 @devops-lead-a @team-lead @audit-lead-b
+/terraform/bootstrap/                       @devops-lead-a @team-lead
+/terraform/shared/                          @devops-lead-a @team-lead
+/terraform/standard/                        @devops-lead-a @sec-lead-c
+/terraform/autopilot/                       @devops-lead-a @sec-lead-c
 
-# Role C: Security Labs & Fixtures
-/labs/ @role-c
-/tests/fixtures/ @role-c @role-b
-/docs/ @team-lead
+# ------------------------------------------------------------------------------
+# 2. PYTHON AUDIT ENGINE & COLLECTORS (Role B & Role A phối hợp)
+# ------------------------------------------------------------------------------
+# GCP Collector đọc cấu hình cloud (A phát triển, B review schema tích hợp)
+/src/cis_gke_audit/collectors/gcp/          @devops-lead-a @audit-lead-b
+
+# K8s Collector & Toàn bộ Engine (B phát triển, C & Lead review)
+/src/cis_gke_audit/collectors/              @audit-lead-b @devops-lead-a
+/src/cis_gke_audit/normalizers/             @audit-lead-b @sec-lead-c
+/src/cis_gke_audit/evaluation/              @audit-lead-b @sec-lead-c
+/src/cis_gke_audit/reporting/               @audit-lead-b @team-lead
+/src/cis_gke_audit/cli.py                   @audit-lead-b @team-lead
+/src/cis_gke_audit/                         @audit-lead-b @team-lead
+
+# ------------------------------------------------------------------------------
+# 3. CIS RULES LOGIC (Role B & C đồng sở hữu)
+# ------------------------------------------------------------------------------
+# Rules 4.1.x do B viết, C kiểm tra CIS semantics
+# Rules 4.2.x/4.3.x do C viết, B kiểm tra tính tương thích engine
+/src/cis_gke_audit/rules/                   @audit-lead-b @sec-lead-c
+
+# ------------------------------------------------------------------------------
+# 4. SECURITY LABS & MANIFESTS (Role C phụ trách chính, A hỗ trợ hạ tầng mạng)
+# ------------------------------------------------------------------------------
+/labs/                                      @sec-lead-c @devops-lead-a
+/labs/service-account/                      @sec-lead-c @audit-lead-b
+/labs/network-policy/                       @sec-lead-c @devops-lead-a
+/labs/pod-security/                         @sec-lead-c @audit-lead-b
+
+# ------------------------------------------------------------------------------
+# 5. TEST FRAMEWORK & FIXTURES (Role B & C phối hợp)
+# ------------------------------------------------------------------------------
+/tests/unit/                                @audit-lead-b @team-lead
+/tests/fixtures/                            @audit-lead-b @sec-lead-c
+/tests/integration/                         @devops-lead-a @audit-lead-b
+
+# ------------------------------------------------------------------------------
+# 6. CI/CD WORKFLOWS & AUTOMATION (Role A & Team Lead)
+# ------------------------------------------------------------------------------
+/.github/workflows/                         @devops-lead-a @team-lead
+/.github/ISSUE_TEMPLATE/                    @team-lead @audit-lead-b
+/.github/pull_request_template.md           @team-lead @audit-lead-b
+/.github/CODEOWNERS                         @team-lead @devops-lead-a
+
+# ------------------------------------------------------------------------------
+# 7. TÀI LIỆU, DATA CONTRACTS & CIS MATRIX
+# ------------------------------------------------------------------------------
+# Hợp đồng dữ liệu bắt buộc cả 3 vai trò cùng kiểm duyệt
+/docs/contracts.md                          @audit-lead-b @devops-lead-a @sec-lead-c
+# Ma trận CIS do C cập nhật, B và A đối chiếu
+/docs/cis-control-matrix.md                 @sec-lead-c @audit-lead-b @devops-lead-a
+/docs/contributing.md                       @team-lead @devops-lead-a
+/docs/                                      @team-lead @sec-lead-c @audit-lead-b
+/README.md                                  @team-lead @devops-lead-a @audit-lead-b
+

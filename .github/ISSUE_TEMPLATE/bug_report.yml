@@ -1,45 +1,94 @@
-name: Bug Report
-description: Create a report to help us fix a bug
+name: "Báo cáo lỗi (Bug Report)"
+description: "Báo cáo lỗi trong Audit Engine, Collectors, Rules, Terraform hoặc Labs"
 title: "[BUG]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Vui lòng cung cấp chi tiết lỗi bạn gặp phải để đội ngũ có thể tái hiện và sửa chữa.
-  - type: textarea
-    id: bug_description
+        ### Biểu mẫu báo cáo lỗi hệ thống CIS GKE Security Audit
+        Vui lòng cung cấp chi tiết lỗi để đội ngũ (A, B, C) có thể nhanh chóng cô lập và khắc phục.
+  - type: dropdown
+    id: component
     attributes:
-      label: Mô tả lỗi
-      description: Mô tả ngắn gọn và rõ ràng về vấn đề xảy ra.
+      label: Thành phần / Module gặp sự cố
+      description: Lỗi phát sinh ở khối thành phần nào?
+      options:
+        - "Role A: Terraform Hạ tầng (Bootstrap, Shared VPC, GKE Clusters)"
+        - "Role A: Google Cloud API Collector"
+        - "Role B: Kubernetes API Collector"
+        - "Role B: Normalizers & Evidence Processing"
+        - "Role B: Core Evaluator & CLI"
+        - "Role B: Reporter (JSON / HTML)"
+        - "Role B: Rules 4.1.x (Service Account / RBAC)"
+        - "Role C: Rules 4.2.x / 4.3.x (Pod Security / Network Policy)"
+        - "Role C: Labs & Test Manifests"
+        - "CI / Workflows"
+    validations:
+      required: true
+  - type: dropdown
+    id: gke_mode
+    attributes:
+      label: Chế độ GKE xảy ra lỗi
+      description: Lỗi xảy ra trên chế độ nào của cluster?
+      options:
+        - "GKE Standard"
+        - "GKE Autopilot"
+        - "Cả hai chế độ"
+        - "Môi trường giả lập Offline (Fixtures / Unit tests)"
+    validations:
+      required: true
+  - type: input
+    id: cis_control_id
+    attributes:
+      label: CIS Control ID liên quan (nếu có)
+      description: Ví dụ: 4.1.4, 4.1.5, 4.1.9, 4.2.1, 4.3.1, 4.3.2.
+      placeholder: "Ví dụ: 4.3.1 hoặc N/A"
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: Mô tả chi tiết lỗi
+      description: Mô tả ngắn gọn nhưng đầy đủ về hiện tượng lỗi.
     validations:
       required: true
   - type: textarea
     id: reproduction_steps
     attributes:
-      label: Các bước tái hiện (Steps to Reproduce)
-      description: Các bước cụ thể để tái hiện hành vi lỗi.
+      label: Các bước tái hiện lỗi (Steps to Reproduce)
+      description: Các bước cụ thể để người khác có thể tái hiện lại lỗi này.
       value: |
-        1. Chạy lệnh '...'
-        2. Cấu hình cluster '...'
-        3. Xem kết quả báo cáo
+        1. Chạy lệnh: `cis-gke-audit ...` hoặc `pytest ...`
+        2. Dữ liệu đầu vào hoặc fixture được sử dụng:
+        3. Quan sát kết quả output
     validations:
       required: true
   - type: textarea
-    id: expected_behavior
+    id: expected_vs_actual
     attributes:
-      label: Hành vi kỳ vọng (Expected Behavior)
-      description: Kết quả lẽ ra phải xảy ra.
+      label: Kết quả kỳ vọng vs Kết quả thực tế
+      description: Bạn kỳ vọng kết quả gì (PASS, REVIEW,...) và thực tế engine trả về gì?
+      placeholder: "Kỳ vọng: Rule 4.2.1 trả N/A trên Autopilot. Thực tế: Báo lỗi KeyError..."
     validations:
       required: true
+  - type: textarea
+    id: logs_or_traceback
+    attributes:
+      label: Logs / Stack Trace / Error Output
+      description: Dán đoạn mã lỗi hoặc traceback terminal vào đây (không dán secrets/credentials).
+      render: shell
+    validations:
+      required: false
   - type: textarea
     id: environment
     attributes:
-      label: Môi trường (Environment)
-      description: Phiên bản Python, GKE, hệ điều hành,...
+      label: Môi trường thử nghiệm
+      description: Thông tin phiên bản Python, OS và công cụ liên quan.
       value: |
-        - OS: 
-        - Python version: 
-        - GKE version / mode (Standard/Autopilot): 
+        - OS: Windows / Linux / macOS
+        - Python version: 3.10 / 3.11 / 3.12
+        - Git commit SHA:
     validations:
       required: false
+

@@ -1,56 +1,51 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Distribution / packaging
-dist/
-build/
-*.egg-info/
-.eggs/
-
-# Virtual environments
-.venv/
-env/
-venv/
-ENV/
-
-# Testing & Coverage
-.pytest_cache/
-.coverage
-htmlcov/
-coverage.xml
-
 # Terraform
-**/.terraform/*
+**/.terraform/
 *.tfstate
 *.tfstate.*
-crash.log
-crash.*.log
 *.tfvars
 *.tfvars.json
+*.tfplan
+*.tfplan.json
+crash.log
+crash.*.log
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-.terraformrc
-terraform.rc
 
-# IDE & OS files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
 
-# Secrets & Local credentials
-*.pem
-*.key
-*.crt
-*service-account*.json
-credentials.json
+# Local environment and credentials
 .env
 .env.*
 !.env.example
+credentials.json
+service-account-key.json
+*.pem
+*.key
+*.crt
+*.kubeconfig
+kubeconfig
+
+# Local outputs and live evidence
+reports/
+evidence/
+artifacts/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
