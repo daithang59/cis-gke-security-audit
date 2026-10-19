@@ -1,0 +1,22 @@
+\begin{tikzpicture}[
+  node distance=5mm,
+  every node/.style={font=\scriptsize,align=center},
+  box/.style={draw=reportblue,rounded corners,fill=reportlight,text width=0.13\textwidth,minimum height=13mm},
+  arrow/.style={-{Latex[length=1.8mm]},thick,draw=reportblue}
+]
+  \node[box] (trigger) {Kích hoạt workflow};
+  \node[box,right=of trigger] (runner) {Actions runner};
+  \node[box,right=of runner] (auth) {OIDC / Workload Identity Federation};
+  \node[box,right=of auth] (iam) {IAM / RBAC\\quyền đọc};
+  \node[box,below=8mm of iam] (network) {Kết nối mạng tới\\Cloud / GKE API};
+  \node[box,left=of network] (engine) {Audit Engine};
+  \node[box,left=of engine] (reports) {JSON/HTML};
+  \node[box,left=of reports] (artifacts) {Tệp tạo tác workflow};
+  \draw[arrow] (trigger) -- (runner);
+  \draw[arrow] (runner) -- (auth);
+  \draw[arrow] (auth) -- (iam);
+  \draw[arrow] (iam) -- (network);
+  \draw[arrow] (network) -- (engine);
+  \draw[arrow] (engine) -- (reports);
+  \draw[arrow] (reports) -- (artifacts);
+\end{tikzpicture}

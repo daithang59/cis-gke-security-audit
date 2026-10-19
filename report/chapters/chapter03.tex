@@ -1,0 +1,57 @@
+% ==========================================================================
+% Chương 3 — Thiết kế và kiến trúc hệ thống
+% Chương này chứa các vị trí placeholder cho sơ đồ kiến trúc.
+% Khi có sơ đồ draw.io export PDF, chỉ cần đặt file vào report/figures/
+% và hình sẽ tự động hiển thị thay cho placeholder.
+% ==========================================================================
+\chapter{Thiết kế và kiến trúc hệ thống}
+\label{chap:architecture}
+
+% TODO: Viết nội dung giới thiệu kiến trúc tổng thể của hệ thống.
+
+\section{Kiến trúc hệ thống tổng thể}
+\label{sec:system-architecture}
+
+% TODO: Mô tả các thành phần chính: Terraform, Python CIS Audit Engine,
+% GitHub Actions, GKE cluster, và mối quan hệ giữa chúng.
+
+\begin{figure}[htbp]
+  \centering
+  \placeholderfig{system-architecture}{13cm}{7cm}{%
+    Sơ đồ kiến trúc hệ thống tổng thể\\[4pt]
+    Terraform -- GKE Cluster -- Python Audit Engine -- GitHub Actions}
+  \caption{Kiến trúc tổng thể của hệ thống đánh giá và tăng cường bảo mật GKE}
+  \label{fig:system-architecture}
+\end{figure}
+
+\section{Luồng hoạt động end-to-end}
+\label{sec:system-workflow}
+
+% TODO: Mô tả luồng từ khởi tạo hạ tầng, thu thập dữ liệu, đánh giá,
+% đến báo cáo và remediation.
+
+\begin{figure}[htbp]
+  \centering
+  \placeholderfig{system-workflow}{13cm}{7cm}{%
+    Luồng hoạt động end-to-end của hệ thống\\[4pt]
+    Provisioning → Audit → Report → Approval\\[2pt]
+    Được duyệt → Remediation → Re-audit\\[2pt]
+    Không được duyệt → Chỉ xuất báo cáo}
+  \caption{Luồng hoạt động end-to-end từ khởi tạo đến đánh giá lại}
+  \label{fig:system-workflow}
+\end{figure}
+
+\section{Kiến trúc Python CIS Audit Engine}
+\label{sec:audit-engine-architecture}
+
+% TODO: Mô tả chi tiết các thành phần bên trong Audit Engine:
+% Collector, Normalizer, Rule Registry, Evaluator, Reporter.
+
+\begin{figure}[htbp]
+  \centering
+  \placeholderfig{audit-engine-architecture}{13cm}{7cm}{%
+    Kiến trúc chi tiết Python CIS Audit Engine\\[4pt]
+    Collector → Normalizer → Rule Registry → Evaluator → Reporter}
+  \caption{Kiến trúc chi tiết của Python CIS Audit Engine}
+  \label{fig:audit-engine-architecture}
+\end{figure}

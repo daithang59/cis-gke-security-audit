@@ -1,0 +1,21 @@
+\begin{tikzpicture}[
+  node distance=5mm and 7mm,
+  every node/.style={font=\scriptsize,align=center},
+  box/.style={draw=reportblue,rounded corners,fill=reportlight,text width=0.135\textwidth,minimum height=13mm},
+  arrow/.style={-{Latex[length=1.8mm]},thick,draw=reportblue}
+]
+  \node[box] (target) {Chọn cụm và chế độ};
+  \node[box,right=of target] (bench) {Chọn benchmark};
+  \node[box,right=of bench,yshift=7mm] (k8s) {Thu thập từ\\Kubernetes API};
+  \node[box,right=of bench,yshift=-7mm] (gcp) {Thu thập từ\\Google Cloud API};
+  \node[box,right=13mm of k8s,yshift=-7mm] (normalize) {Chuẩn hóa bằng chứng};
+  \node[box,below=8mm of normalize] (rules) {Chọn tiêu chí và đánh giá};
+  \node[box,left=of rules] (report) {Báo cáo JSON/HTML};
+  \draw[arrow] (target) -- (bench);
+  \draw[arrow] (bench) -- (k8s);
+  \draw[arrow] (bench) -- (gcp);
+  \draw[arrow] (k8s) -- (normalize);
+  \draw[arrow] (gcp) -- (normalize);
+  \draw[arrow] (normalize) -- (rules);
+  \draw[arrow] (rules) -- (report);
+\end{tikzpicture}

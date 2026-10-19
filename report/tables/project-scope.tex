@@ -1,0 +1,21 @@
+\begin{longtable}{C{1.2cm} L{5.2cm} L{3.6cm} L{3.6cm}}
+\caption{Đối chiếu sáu control ưu tiên theo chế độ GKE}
+\label{tab:project-scope}\\
+\toprule
+\tablehead CIS ID & \tablehead Nội dung kiểm tra & \tablehead GKE Standard & \tablehead GKE Autopilot \\
+\midrule
+\endfirsthead
+\caption[]{Đối chiếu sáu control ưu tiên theo chế độ GKE (tiếp theo)}\\
+\toprule
+\tablehead CIS ID & \tablehead Nội dung kiểm tra & \tablehead GKE Standard & \tablehead GKE Autopilot \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+4.1.4 & Workload không chủ động sử dụng ServiceAccount \texttt{default}. & Level 1, Automated, tr.~40. & Level 1, Automated, tr.~26. \\
+4.1.5 & Chỉ gắn token ServiceAccount khi workload cần Kubernetes API. & Level 1, Manual, tr.~43. & Level 1, Manual, tr.~29. \\
+4.1.9 & Không gán RBAC tùy biến cho toàn bộ nhóm \texttt{system:authenticated}. & Level 1, Automated, tr.~55. & Level 1, Automated, tr.~41. \\
+4.2.1 & Thực thi PSS \texttt{baseline} hoặc \texttt{restricted} trên namespace workload. & Level 1, Manual, tr.~60. & \notapplicable. \\
+4.3.1 & Xác minh cơ chế thực thi NetworkPolicy đúng theo mode. & Level 1, Manual, Dataplane V2 hoặc Calico, tr.~64. & Level 2, Manual, Dataplane V2 tích hợp, tr.~46. \\
+4.3.2 & Thiết lập default-deny cho ingress và egress ở namespace workload. & Level 2, Automated, tr.~67. & \notapplicable. \\
+\end{longtable}

@@ -60,4 +60,7 @@ Thumbs.db
 03_CIS_GKE_DacTa_Controls_CoHinh.md
 *.pdf
 
+# XeLaTeX report build artifacts
+report/build/
+
 

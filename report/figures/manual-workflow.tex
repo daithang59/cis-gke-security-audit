@@ -1,0 +1,14 @@
+\begin{tikzpicture}[
+  node distance=6mm,
+  every node/.style={font=\small,align=center},
+  box/.style={draw=reportblue,rounded corners,fill=reportlight,text width=0.18\textwidth,minimum height=12mm},
+  arrow/.style={-{Latex[length=2mm]},thick,draw=reportblue}
+]
+  \node[box] (target) {Xác định cụm và phạm vi};
+  \node[box,right=of target] (collect) {Thu thập cấu hình chỉ đọc};
+  \node[box,right=of collect] (compare) {Đối chiếu yêu cầu CIS};
+  \node[box,right=of compare] (review) {Xác minh thủ công và lưu bằng chứng};
+  \draw[arrow] (target) -- (collect);
+  \draw[arrow] (collect) -- (compare);
+  \draw[arrow] (compare) -- (review);
+\end{tikzpicture}

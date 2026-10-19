@@ -1,0 +1,40 @@
+\documentclass[12pt,a4paper,oneside,openany]{book}
+
+\input{preamble}
+
+\newcommand{\reporttitle}{Hệ thống đánh giá và tăng cường bảo mật Google Kubernetes Engine theo CIS Benchmark v2.0.0}
+\newcommand{\reporttype}{BÁO CÁO ĐỒ ÁN}
+\newcommand{\reportauthor}{Nhóm thực hiện: [Bổ sung thông tin]}
+\newcommand{\reportinstitution}{[Bổ sung tên trường/khoa]}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  {\large\bfseries \reportinstitution\par}
+  \vspace{2.5cm}
+  {\Large\bfseries \reporttype\par}
+  \vspace{1.2cm}
+  {\LARGE\bfseries \reporttitle\par}
+  \vfill
+  {\large \reportauthor\par}
+  \vspace{0.8cm}
+  {\large Thành phố Hồ Chí Minh, 2026\par}
+\end{titlepage}
+
+\frontmatter
+\tableofcontents
+\listoffigures
+\listoftables
+
+\mainmatter
+\include{chapters/chapter01}
+\include{chapters/chapter02}
+% --- Bật chương III–IV khi nhóm bắt đầu viết nội dung chính thức ---
+% \include{chapters/chapter03}
+% \include{chapters/chapter04}
+
+\backmatter
+\printbibliography[heading=bibintoc,title={Tài liệu tham khảo}]
+
+\end{document}

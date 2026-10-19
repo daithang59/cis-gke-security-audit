@@ -1,0 +1,19 @@
+\begin{center}
+\begin{minipage}{\textwidth}
+\centering
+\captionsetup{hypcap=false}
+\captionof{table}{Đầu ra dự kiến của Python CIS Audit Engine}
+\label{tab:audit-outputs}
+\begin{tabularx}{\textwidth}{C{0.9cm} L{2.6cm} >{\raggedright\arraybackslash}X L{4.3cm}}
+\toprule
+\tablehead STT & \tablehead Đầu ra (Output) & \tablehead Nội dung & \tablehead Ý nghĩa \\
+\midrule
+1 & Audit Findings & Kết quả của từng control, tài nguyên và trạng thái đánh giá. & Cho biết control được kết luận như thế nào và vì sao. \\
+2 & Evidence & Bằng chứng đã làm sạch, thu thập từ Kubernetes API và Google Cloud API. & Cho phép kiểm tra lại kết luận mà không lưu dữ liệu nhạy cảm. \\
+3 & JSON Report & Báo cáo có cấu trúc gồm thông tin phiên chạy, kết quả và tham chiếu bằng chứng. & Phục vụ lưu trữ, so sánh và xử lý tự động. \\
+4 & HTML Report & Báo cáo trực quan gồm kết quả, lý do và bằng chứng liên quan. & Giúp người quản trị đọc và thẩm định kết quả. \\
+5 & Audit Summary & Số lượng control theo trạng thái, benchmark, chế độ và phạm vi. & Có thể tích hợp trong JSON hoặc HTML Report. \\
+\bottomrule
+\end{tabularx}
+\end{minipage}
+\end{center}

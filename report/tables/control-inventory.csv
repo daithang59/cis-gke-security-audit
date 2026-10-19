@@ -1,0 +1,37 @@
+benchmark,cis_id,name,profile_applicability,assessment_status,description_vi,printed_page,pdf_physical_page
+Standard,3.1.1,"Ensure that the kubeconfig file permissions are set to 644 or more restrictive",Level 1,Automated,"Quyền tệp kubeconfig không rộng hơn 644",18,19
+Standard,3.1.2,"Ensure that the kubelet kubeconfig file ownership is set to root:root",Level 1,Automated,"Tệp kubeconfig của kubelet thuộc root:root",21,22
+Standard,3.1.3,"Ensure that the kubelet configuration file has permissions set to 644",Level 1,Automated,"Quyền tệp cấu hình kubelet là 644 hoặc chặt hơn",24,25
+Standard,3.1.4,"Ensure that the kubelet configuration file ownership is set to root:root",Level 1,Automated,"Tệp cấu hình kubelet thuộc root:root",27,28
+Standard,4.1.1,"Ensure the cluster-admin ClusterRole is only used when required",Level 1,Manual,"Chỉ sử dụng cluster-admin khi có nhu cầu được xác minh",31,32
+Standard,4.1.2,"Ensure access to Secrets is minimized and granted only where required",Level 1,Manual,"Giới hạn quyền đối với Secret theo nhu cầu",34,35
+Standard,4.1.3,"Minimize wildcard use in Roles and ClusterRoles",Level 1,Manual,"Giảm quyền đại diện bằng ký tự đại diện",37,38
+Standard,4.1.4,"Ensure that default service accounts are not actively used",Level 1,Automated,"Workload dùng ServiceAccount chuyên biệt thay vì default",40,41
+Standard,4.1.5,"Ensure service account tokens are mounted only when Pods require Kubernetes API access",Level 1,Manual,"Chỉ gắn token khi Pod cần Kubernetes API",43,44
+Standard,4.1.6,"Avoid granting cluster admin level access through the system:masters group",Level 1,Automated,"Không cấp quyền quản trị qua system:masters",46,47
+Standard,4.1.7,"Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster",Level 1,Manual,"Giới hạn quyền bind impersonate và escalate",49,50
+Standard,4.1.9,"Avoid binding RBAC roles to all authenticated users",Level 1,Automated,"Không gán RBAC tùy biến cho system:authenticated",55,56
+Standard,4.2.1,"Enforce baseline or restricted Pod Security Standards on workload namespaces",Level 1,Manual,"Thực thi PSS baseline hoặc restricted",60,61
+Standard,4.3.1,"Enable NetworkPolicy enforcement with GKE Dataplane V2 or Calico",Level 1,Manual,"Xác minh thực thi NetworkPolicy bằng Dataplane V2 hoặc Calico",64,65
+Standard,4.6.1,"Use namespaces to separate workload administration and resource governance",Level 1,Manual,"Tách miền quản trị workload bằng namespace",83,84
+Standard,5.2.1,"Use custom least privilege service accounts for GKE node pools",Level 1,Automated,"Node pool dùng service account riêng có quyền tối thiểu",106,107
+Standard,5.5.1,"Use COS_CONTAINERD node images for GKE node pools",Level 1,Automated,"Node pool dùng ảnh COS_CONTAINERD",123,124
+Standard,5.5.4,"Enroll GKE clusters in release channels for automated version management",Level 1,Automated,"Cluster tham gia release channel",132,133
+Standard,5.5.5,"Verify Shielded GKE Nodes are enabled for GKE clusters",Level 1,Automated,"Bật Shielded GKE Nodes",135,136
+Standard,5.5.6,"Verify Shielded GKE Node integrity monitoring is enabled",Level 1,Automated,"Bật giám sát toàn vẹn Shielded GKE Nodes",138,139
+Standard,5.6.2,"Use VPC native GKE clusters with alias IP address ranges",Level 1,Automated,"Dùng VPC-native và alias IP",148,149
+Standard,5.6.5,"Ensure private GKE nodes are configured without external IP addresses",Level 1,Automated,"Node riêng không có IP ngoài",158,159
+Standard,5.7.1,"Enable Cloud Logging and Cloud Monitoring for GKE clusters",Level 1,Automated,"Bật Cloud Logging và Cloud Monitoring",168,169
+Standard,5.8.1,"Disable legacy client certificate authentication for the GKE API server",Level 1,Automated,"Tắt xác thực client certificate cũ",175,176
+Standard,5.8.3,"Ensure Legacy Authorization (ABAC) is Disabled",Level 1,Automated,"Tắt cơ chế phân quyền ABAC cũ",182,183
+Standard,5.10.1,"Do not use GKE alpha clusters for production workloads",Level 1,Automated,"Không dùng alpha cluster cho production",193,194
+Autopilot,4.1.1,"Ensure the cluster-admin ClusterRole is only used when required",Level 1,Manual,"Chỉ sử dụng cluster-admin khi có nhu cầu được xác minh",17,18
+Autopilot,4.1.2,"Ensure access to Secrets is minimized and granted only where required",Level 1,Manual,"Giới hạn quyền đối với Secret theo nhu cầu",20,21
+Autopilot,4.1.3,"Minimize wildcard use in Roles and ClusterRoles",Level 1,Manual,"Giảm quyền đại diện bằng ký tự đại diện",23,24
+Autopilot,4.1.4,"Ensure that default service accounts are not actively used",Level 1,Automated,"Workload dùng ServiceAccount chuyên biệt thay vì default",26,27
+Autopilot,4.1.5,"Ensure service account tokens are mounted only when Pods require Kubernetes API access",Level 1,Manual,"Chỉ gắn token khi Pod cần Kubernetes API",29,30
+Autopilot,4.1.6,"Avoid granting cluster admin level access through the system:masters group",Level 1,Automated,"Không cấp quyền quản trị qua system:masters",32,33
+Autopilot,4.1.7,"Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster",Level 1,Manual,"Giới hạn quyền bind impersonate và escalate",35,36
+Autopilot,4.1.9,"Avoid binding RBAC roles to all authenticated users",Level 1,Automated,"Không gán RBAC tùy biến cho system:authenticated",41,42
+Autopilot,4.6.1,"Use namespaces to separate workload administration and resource governance",Level 1,Manual,"Tách miền quản trị workload bằng namespace",57,58
+Autopilot,5.4.1,"Enable VPC Flow Logs and Intranode Visibility",Level 1,Automated,"Bật VPC Flow Logs và Intranode Visibility",88,89
