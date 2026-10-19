@@ -1,0 +1,45 @@
+name: Bug Report
+description: Create a report to help us fix a bug
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Vui lòng cung cấp chi tiết lỗi bạn gặp phải để đội ngũ có thể tái hiện và sửa chữa.
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Mô tả lỗi
+      description: Mô tả ngắn gọn và rõ ràng về vấn đề xảy ra.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Các bước tái hiện (Steps to Reproduce)
+      description: Các bước cụ thể để tái hiện hành vi lỗi.
+      value: |
+        1. Chạy lệnh '...'
+        2. Cấu hình cluster '...'
+        3. Xem kết quả báo cáo
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Hành vi kỳ vọng (Expected Behavior)
+      description: Kết quả lẽ ra phải xảy ra.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Môi trường (Environment)
+      description: Phiên bản Python, GKE, hệ điều hành,...
+      value: |
+        - OS: 
+        - Python version: 
+        - GKE version / mode (Standard/Autopilot): 
+    validations:
+      required: false

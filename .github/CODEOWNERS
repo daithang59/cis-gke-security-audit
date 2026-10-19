@@ -1,0 +1,15 @@
+# Global default owners
+* @team-lead
+
+# Role A: Infrastructure & GCP Collectors
+/terraform/ @team-lead @role-a
+/src/cis_gke_audit/collectors/gcp/ @role-a
+
+# Role B: Core Audit Framework & CLI
+/src/cis_gke_audit/ @role-b
+/tests/ @role-b
+
+# Role C: Security Labs & Fixtures
+/labs/ @role-c
+/tests/fixtures/ @role-c @role-b
+/docs/ @team-lead

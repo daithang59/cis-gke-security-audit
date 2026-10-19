@@ -68,4 +68,3 @@ pytest
 # Thực thi CLI
 cis-gke-audit --help
 ```
-# cis-gke-security-audit

@@ -1,0 +1,34 @@
+name: Task
+description: Create a task or milestone deliverable
+title: "[TASK]: "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã đóng góp! Vui lòng điền chi tiết nhiệm vụ bên dưới.
+  - type: input
+    id: assignee_role
+    attributes:
+      label: Nhóm phụ trách (A / B / C)
+      description: Phân công vai trò đảm nhiệm nhiệm vụ này.
+      placeholder: "Ví dụ: A (Terraform/GCP) hoặc B (Core Audit) hoặc C (Labs/Rules)"
+    validations:
+      required: true
+  - type: textarea
+    id: task_description
+    attributes:
+      label: Mô tả công việc
+      description: Chi tiết những việc cần thực hiện.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Tiêu chuẩn nghiệm thu (Acceptance Criteria)
+      description: Điều kiện để coi task này hoàn thành.
+      value: |
+        - [ ] Tiêu chí 1
+        - [ ] Tiêu chí 2
+    validations:
+      required: true
