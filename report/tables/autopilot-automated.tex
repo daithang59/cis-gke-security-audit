@@ -1,0 +1,22 @@
+\begin{longtable}{C{0.85cm} C{1.2cm} L{5.25cm} L{5.9cm}}
+\caption{Khuyến nghị Level 1 — Automated của GKE Autopilot}
+\label{tab:autopilot-automated}\\
+\toprule
+\tablehead STT & \tablehead CIS ID & \tablehead Name & \tablehead Description (ngắn) \\
+\midrule
+\endfirsthead
+\caption[]{Khuyến nghị Level 1 — Automated của GKE Autopilot (tiếp theo)}\\
+\toprule
+\tablehead STT & \tablehead CIS ID & \tablehead Name & \tablehead Description (ngắn) \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize Còn tiếp ở trang sau}\\
+\endfoot
+\bottomrule
+\endlastfoot
+1 & 4.1.4 & Ensure that default service accounts are not actively used & Phát hiện workload đang dùng ServiceAccount \texttt{default} thay vì tài khoản chuyên biệt. \sourcepage{cis-gke-autopilot-v2}{26} \\
+2 & 4.1.6 & Avoid granting cluster admin level access through the system:masters group & Tránh cấp quyền quản trị cluster thông qua nhóm \texttt{system:masters}. \sourcepage{cis-gke-autopilot-v2}{32} \\
+3 & 4.1.9 & Avoid binding RBAC roles to all authenticated users & Phát hiện RBAC tùy biến cấp quyền cho nhóm \texttt{system:authenticated}. \sourcepage{cis-gke-autopilot-v2}{41} \\
+4 & 5.4.1 & Enable VPC Flow Logs and Intranode Visibility & Kiểm tra VPC Flow Logs và Intranode Visibility để tăng khả năng quan sát lưu lượng Pod. \sourcepage{cis-gke-autopilot-v2}{88} \\
+\end{longtable}

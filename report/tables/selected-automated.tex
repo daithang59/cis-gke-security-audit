@@ -1,0 +1,20 @@
+\begin{center}
+\begin{minipage}{\textwidth}
+  \centering
+  \captionsetup{hypcap=false}
+  \captionof{table}{Các control Automated thuộc phạm vi đề tài}
+  \label{tab:selected-automated}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\textwidth}{@{}c l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{2.0cm} >{\centering\arraybackslash}p{2.0cm}@{}}
+    \toprule
+    \textbf{STT} & \textbf{CIS ID} & \textbf{Name} & \textbf{Description} & \textbf{GKE Standard} & \textbf{GKE Autopilot} \\
+    \midrule
+    1 & 4.1.4 & Ensure that default service accounts are not actively used & Kiểm tra workload có đang sử dụng ServiceAccount mặc định hay không. & Level 1, Automated & Level 1, Automated \\
+    2 & 4.1.9 & Avoid binding RBAC roles to all authenticated users & Kiểm tra vai trò RBAC tùy chỉnh có được gán cho nhóm \texttt{system:authenticated} hay không. & Level 1, Automated & Level 1, Automated \\
+    3 & 4.3.2 & Define default deny NetworkPolicies for each workload namespace & Kiểm tra từng namespace workload có chính sách mạng mặc định từ chối hay không. & Level 2, Automated & Không có control \\
+    \bottomrule
+  \end{tabularx}
+\end{minipage}
+\end{center}

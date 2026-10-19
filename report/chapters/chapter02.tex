@@ -1,0 +1,82 @@
+\chapter{Phương pháp thực hiện}
+\label{chap:methodology}
+
+Đề tài sử dụng ba phương pháp có vai trò khác nhau. Phương pháp thủ công phù hợp với control cần hiểu ngữ cảnh sử dụng. Phương pháp tự động giúp lặp lại các bước thu thập và đối chiếu cấu hình. Phương pháp tự động từ xa dùng GitHub Actions để chạy cùng công cụ mà không phụ thuộc vào máy cá nhân. Trong chương này, tên phương pháp Automated mô tả cách nhóm tổ chức việc đánh giá, không thay đổi nhãn Manual hoặc Automated do CIS quy định \parencite{project-overview}.
+
+\section{Phương pháp thủ công (Manual)}
+\label{sec:manual-method}
+
+Một số control không thể kết luận chỉ bằng một giá trị cấu hình. Người đánh giá còn phải hiểu mục đích của workload, ngoại lệ được chấp thuận và phạm vi tài nguyên đang kiểm tra. Vì vậy, phương pháp thủ công được dùng khi bối cảnh vận hành có ảnh hưởng trực tiếp đến kết luận.
+
+Trước khi kiểm tra, người quản trị ghi nhận cụm, chế độ Standard hoặc Autopilot, benchmark tương ứng và phạm vi namespace. \texttt{gcloud} được dùng để xem thông tin cụm GKE, còn \texttt{kubectl} đọc cấu hình của Namespace, ServiceAccount, RBAC, Pod và NetworkPolicy. Các lệnh chỉ sử dụng quyền đọc cần thiết. Dữ liệu nhạy cảm như Secret, token, khóa riêng và kubeconfig thô không được đưa vào báo cáo \parencite{project-controls}.
+
+Ví dụ minh họa với control 4.1.5, việc một Pod được gắn ServiceAccount token chưa đủ để kết luận cấu hình không phù hợp. Người đánh giá cần xác định workload có thực sự gọi Kubernetes API hay không. Nếu chưa làm rõ được mục đích này, kết quả phải chờ xác minh thay vì kết luận PASS hoặc FAIL.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/manual-workflow}
+  \caption{Luồng đánh giá thủ công và lưu bằng chứng}
+  \label{fig:manual-workflow}
+\end{figure}
+
+Sau khi đối chiếu, người quản trị tạo một kết quả đánh giá, còn gọi là \emph{finding}. Mỗi finding ghi CIS ID, benchmark, tài nguyên, dữ liệu quan sát, người đánh giá và thời gian. Bằng chứng, hay \emph{evidence}, là phần dữ liệu đã làm sạch dùng để giải thích kết luận. Nếu dữ liệu đã được thu thập nhưng còn thiếu ngữ cảnh, finding mang trạng thái REVIEW. Nếu không thể thu thập hoặc xử lý dữ liệu do thiếu quyền, timeout hay lỗi API, trạng thái phải là ERROR. Hai trường hợp này không được thay thế cho nhau.
+
+Hình \ref{fig:manual-workflow} tóm tắt quy trình từ xác định phạm vi đến lưu kết quả. Phương pháp này chỉ đọc dữ liệu và không thay đổi cấu hình của cụm.
+
+\section{Phương pháp tự động (Automated)}
+\label{sec:automated-method}
+
+Khi số lượng tài nguyên tăng hoặc một cụm cần được đánh giá nhiều lần, kiểm tra thủ công dễ tốn thời gian và cho kết quả không đồng nhất. Phương pháp tự động được đề xuất để lặp lại cùng một quy trình thu thập, đối chiếu và lập báo cáo. Công cụ thực hiện quy trình này được gọi là Python CIS Audit Engine.
+
+Trước hết, chương trình xác định chế độ GKE và chọn benchmark phù hợp. Hai bộ thu thập dữ liệu, gọi là \emph{collector}, đọc thông tin từ Kubernetes API và Google Cloud API. Kubernetes API cung cấp cấu hình của workload và tài nguyên trong cụm. Google Cloud API cung cấp thông tin về cụm và các thiết lập do nền tảng GKE quản lý. Việc tách hai nguồn giúp báo cáo chỉ rõ bằng chứng đến từ đâu.
+
+Dữ liệu thu thập được đưa về một cấu trúc thống nhất trước khi đánh giá. Danh mục tiêu chí, còn gọi là \emph{Rule Registry}, chọn control phù hợp với Standard hoặc Autopilot. Bộ đánh giá, hay \emph{Evaluator}, so sánh dữ liệu với điều kiện của control và tạo finding kèm bằng chứng. Các bước này được trình bày trong Hình \ref{fig:automated-workflow} \parencite{project-overview,project-controls}.
+
+Ví dụ minh họa với control 4.1.4, chương trình đọc cấu hình Pod để xác định workload đang dùng ServiceAccount nào. Nếu trường \texttt{serviceAccountName} không được khai báo hoặc mang giá trị \texttt{default}, thông tin đó được ghi lại để đánh giá việc sử dụng ServiceAccount mặc định. Đây chỉ là cách minh họa quy trình, không phải kết quả kiểm tra của một cụm thực tế.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/automated-workflow}
+  \caption{Luồng xử lý dự kiến của Python CIS Audit Engine}
+  \label{fig:automated-workflow}
+\end{figure}
+
+Bảng \ref{tab:audit-outputs} mô tả năm loại đầu ra của phương pháp. JSON Report lưu dữ liệu theo cấu trúc để máy có thể tiếp tục xử lý. HTML Report trình bày cùng kết quả theo cách thuận tiện hơn cho người đọc. Bảng không đưa số liệu PASS/FAIL khi chưa có bằng chứng thực nghiệm.
+
+\input{tables/audit-outputs}
+
+Audit Summary là phần tổng hợp thông tin và có thể được đặt trong JSON Report hoặc HTML Report, không nhất thiết là một tệp riêng.
+
+Đề tài sử dụng năm trạng thái để trình bày kết quả. Đây là quy ước của hệ thống, không phải bộ trạng thái chính thức do CIS ban hành:
+
+\begin{description}[style=nextline,leftmargin=2.2cm,labelwidth=1.8cm]
+  \item[PASS] Bằng chứng cho thấy điều kiện của control đã được đáp ứng.
+  \item[FAIL] Bằng chứng cho thấy điều kiện của control không được đáp ứng.
+  \item[REVIEW] Dữ liệu đã được thu thập nhưng cần người đánh giá xác nhận thêm ngữ cảnh hoặc ngoại lệ.
+  \item[N/A] Control thực sự không áp dụng cho chế độ hoặc đối tượng đang đánh giá.
+  \item[ERROR] Không thể hoàn tất việc thu thập hoặc đánh giá do lỗi quyền truy cập, kết nối, API/SDK hoặc dữ liệu.
+\end{description}
+
+REVIEW không được dùng để che lỗi thu thập dữ liệu, còn ERROR không được tự chuyển thành FAIL. Khi thiếu bằng chứng cần thiết, hệ thống không được kết luận PASS. Độ bao phủ của bộ quy tắc phải được ghi riêng với kết quả của cụm.
+
+Python CIS Audit Engine chỉ đọc cấu hình và tạo báo cáo. Công cụ không tự thay đổi tài nguyên GKE. Mọi biện pháp khắc phục phải được xem xét và phê duyệt trong một quy trình riêng.
+
+\section{Phương pháp tự động từ xa (Remote Automated)}
+\label{sec:remote-method}
+
+Remote Automated không phải là bộ tiêu chí hay thuật toán đánh giá mới. Đây là cách chạy Python CIS Audit Engine từ xa bằng GitHub Actions. Cách này giảm sự phụ thuộc vào máy cá nhân, tránh yêu cầu lưu thông tin đăng nhập dài hạn trên máy người vận hành và giúp cùng một quy trình có thể được kích hoạt lại khi cần.
+
+Workflow có thể được khởi động thủ công, theo lịch hoặc theo một sự kiện đã được nhóm cho phép. GitHub Actions cấp một runner để thực thi công việc. Runner sử dụng OIDC để chứng minh danh tính của workflow. Workload Identity Federation tiếp nhận danh tính đó, giúp workflow nhận thông tin xác thực ngắn hạn để truy cập Google Cloud mà không cần lưu khóa dịch vụ lâu dài.
+
+Sau bước xác thực, IAM và RBAC giới hạn runner ở các quyền đọc cần thiết. Runner cũng phải có kết nối mạng, DNS và đường định tuyến tới Google Cloud API và Kubernetes API. Khi các điều kiện này được đáp ứng, runner chạy lại đúng quy trình thu thập và đánh giá đã mô tả tại Mục \ref{sec:automated-method}. Báo cáo JSON/HTML được lưu dưới dạng workflow artifact, tức tệp kết quả có thể tải về sau khi workflow kết thúc.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/remote-workflow}
+  \caption{Workflow đề xuất cho đánh giá tự động từ xa}
+  \label{fig:remote-workflow}
+\end{figure}
+
+Hình \ref{fig:remote-workflow} tách ba yêu cầu thường bị nhầm lẫn: xác thực danh tính, cấp quyền và kết nối mạng. Với điểm cuối công khai, runner vẫn phải đáp ứng giới hạn truy cập của cụm. Với điểm cuối riêng, cần runner do nhóm quản lý trong mạng có đường kết nối được phê duyệt. Workflow chỉ lưu báo cáo và bằng chứng đã loại bỏ dữ liệu nhạy cảm.
+
+Audit Engine vẫn hoạt động theo nguyên tắc chỉ đọc. Terraform \texttt{apply}, thay đổi IAM hoặc áp manifest khắc phục không thuộc workflow đánh giá. Các thay đổi này cần được phê duyệt riêng, đánh giá tác động và chuẩn bị khả năng hoàn tác \parencite{project-collaboration,project-controls}.

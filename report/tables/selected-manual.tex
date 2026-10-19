@@ -1,0 +1,22 @@
+\begin{center}
+\begin{minipage}{\textwidth}
+  \centering
+  \captionsetup{hypcap=false}
+  \captionof{table}{Các control Manual thuộc phạm vi đề tài}
+  \label{tab:selected-manual}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.18}
+  \begin{tabularx}{\textwidth}{@{}c l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{2.0cm} >{\centering\arraybackslash}p{2.0cm}@{}}
+    \toprule
+    \textbf{STT} & \textbf{CIS ID} & \textbf{Name} & \textbf{Description} & \textbf{GKE Standard} & \textbf{GKE Autopilot} \\
+    \midrule
+    1 & 4.1.5 & Ensure service account tokens are mounted only when Pods require Kubernetes API access & Giảm bề mặt tấn công bằng cách chỉ gắn token cho Pod thực sự cần gọi Kubernetes API. & Level 1, Manual & Level 1, Manual \\
+    2 & 4.2.1 & Enforce baseline or restricted Pod Security Standards on workload namespaces & Xác minh namespace workload thực thi PSS ở chế độ enforce với mức baseline hoặc restricted. & Level 1, Manual & Không có control \\
+    3 & 4.3.1\textsuperscript{*} & NetworkPolicy enforcement & Xác minh cơ chế thực thi NetworkPolicy phù hợp với chế độ GKE đang sử dụng. & Level 1, Manual & Level 2, Manual \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{4pt}
+  {\raggedright\footnotesize\textsuperscript{*} Tên chính thức theo CIS Benchmark v2.0.0: \textbf{Standard} --- \textit{Enable NetworkPolicy enforcement with GKE Dataplane V2 or Calico}; \textbf{Autopilot} --- \textit{Use NetworkPolicy with built in GKE Dataplane V2 enforcement}.\par}
+\end{minipage}
+\end{center}

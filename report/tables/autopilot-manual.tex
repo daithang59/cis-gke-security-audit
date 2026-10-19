@@ -1,0 +1,24 @@
+\begin{longtable}{C{0.85cm} C{1.2cm} L{5.25cm} L{5.9cm}}
+\caption{Khuyến nghị Level 1 — Manual của GKE Autopilot}
+\label{tab:autopilot-manual}\\
+\toprule
+\tablehead STT & \tablehead CIS ID & \tablehead Name & \tablehead Description (ngắn) \\
+\midrule
+\endfirsthead
+\caption[]{Khuyến nghị Level 1 — Manual của GKE Autopilot (tiếp theo)}\\
+\toprule
+\tablehead STT & \tablehead CIS ID & \tablehead Name & \tablehead Description (ngắn) \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize Còn tiếp ở trang sau}\\
+\endfoot
+\bottomrule
+\endlastfoot
+1 & 4.1.1 & Ensure the cluster-admin ClusterRole is only used when required & Hạn chế sử dụng quyền \texttt{cluster-admin}, chỉ cấp khi có nhu cầu được xác minh. \sourcepage{cis-gke-autopilot-v2}{17} \\
+2 & 4.1.2 & Ensure access to Secrets is minimized and granted only where required & Rà soát RBAC để quyền đối với Secret tuân theo nguyên tắc đặc quyền tối thiểu. \sourcepage{cis-gke-autopilot-v2}{20} \\
+3 & 4.1.3 & Minimize wildcard use in Roles and ClusterRoles & Tránh quyền đại diện bằng ký tự đại diện khi có thể mô tả cụ thể tài nguyên và thao tác cần thiết. \sourcepage{cis-gke-autopilot-v2}{23} \\
+4 & 4.1.5 & Ensure service account tokens are mounted only when Pods require Kubernetes API access & Chỉ gắn token ServiceAccount khi workload cần Kubernetes API và lưu lại căn cứ thẩm định. \sourcepage{cis-gke-autopilot-v2}{29} \\
+5 & 4.1.7 & Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster & Kiểm soát chặt các quyền có khả năng gán vai trò, mạo danh hoặc nâng quyền. \sourcepage{cis-gke-autopilot-v2}{35} \\
+6 & 4.6.1 & Use namespaces to separate workload administration and resource governance & Phân tách workload bằng namespace để giới hạn miền quản trị và phân bổ tài nguyên. \sourcepage{cis-gke-autopilot-v2}{57} \\
+\end{longtable}

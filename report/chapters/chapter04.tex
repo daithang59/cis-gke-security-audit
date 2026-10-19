@@ -1,0 +1,49 @@
+% ==========================================================================
+% Chương 4 — Thực nghiệm và kết quả
+% Chương này chứa các vị trí placeholder cho hình before/after
+% của các lab thực nghiệm.
+% Khi có hình export PDF từ draw.io hoặc screenshot, đặt vào figures/.
+% ==========================================================================
+\chapter{Thực nghiệm và kết quả}
+\label{chap:experiments}
+
+% TODO: Viết phần giới thiệu về môi trường thực nghiệm,
+% cấu hình GKE Standard/Autopilot, và phạm vi kiểm tra.
+
+\section{Kết quả đánh giá CIS Benchmark}
+\label{sec:audit-results}
+
+% TODO: Trình bày kết quả đánh giá sáu control trên GKE Standard và Autopilot.
+% Dùng bảng hoặc biểu đồ tổng hợp PASS/FAIL/REVIEW.
+
+\section{Lab ServiceAccount Hardening}
+\label{sec:sa-hardening}
+
+% TODO: Mô tả mục tiêu, các bước thực hiện và kết quả
+% của lab ServiceAccount Hardening (4.1.4, 4.1.5).
+
+\begin{figure}[htbp]
+  \centering
+  \placeholderfig{sa-hardening-before-after}{13cm}{7cm}{%
+    So sánh cấu hình trước và sau ServiceAccount Hardening\\[4pt]
+    Before: default SA, token tự động gắn cho mọi Pod\\[2pt]
+    After: SA riêng, tắt auto-mount cho Pod không cần Kubernetes API}
+  \caption{So sánh cấu hình trước và sau khi tăng cường bảo mật ServiceAccount}
+  \label{fig:sa-hardening-before-after}
+\end{figure}
+
+\section{Lab NetworkPolicy Hardening}
+\label{sec:networkpolicy-hardening}
+
+% TODO: Mô tả mục tiêu, các bước thực hiện và kết quả
+% của lab NetworkPolicy Hardening (4.3.1, 4.3.2).
+
+\begin{figure}[htbp]
+  \centering
+  \placeholderfig{networkpolicy-before-after}{13cm}{7cm}{%
+    So sánh lưu lượng mạng trước và sau NetworkPolicy Hardening\\[4pt]
+    Before: đo và xác minh lưu lượng thực tế giữa các workload\\[2pt]
+    After: default-deny + allow rules theo kết quả đo}
+  \caption{So sánh lưu lượng mạng trước và sau khi áp dụng NetworkPolicy}
+  \label{fig:networkpolicy-before-after}
+\end{figure}

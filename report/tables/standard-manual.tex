@@ -1,0 +1,26 @@
+\begin{longtable}{C{0.85cm} C{1.2cm} L{5.25cm} L{5.9cm}}
+\caption{Khuyến nghị Level 1 — Manual của GKE Standard}
+\label{tab:standard-manual}\\
+\toprule
+\tablehead STT & \tablehead CIS ID & \tablehead Name & \tablehead Description (ngắn) \\
+\midrule
+\endfirsthead
+\caption[]{Khuyến nghị Level 1 — Manual của GKE Standard (tiếp theo)}\\
+\toprule
+\tablehead STT & \tablehead CIS ID & \tablehead Name & \tablehead Description (ngắn) \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\footnotesize Còn tiếp ở trang sau}\\
+\endfoot
+\bottomrule
+\endlastfoot
+1 & 4.1.1 & Ensure the cluster-admin ClusterRole is only used when required & Hạn chế sử dụng quyền \texttt{cluster-admin}, chỉ cấp trong trường hợp thực sự cần và có thể giải trình. \sourcepage{cis-gke-standard-v2}{31} \\
+2 & 4.1.2 & Ensure access to Secrets is minimized and granted only where required & Rà soát RBAC để quyền đọc hoặc thay đổi Secret chỉ được cấp cho chủ thể có nhu cầu công việc. \sourcepage{cis-gke-standard-v2}{34} \\
+3 & 4.1.3 & Minimize wildcard use in Roles and ClusterRoles & Giảm quyền dùng ký tự đại diện trong Role và ClusterRole nhằm tránh phạm vi truy cập rộng ngoài dự kiến. \sourcepage{cis-gke-standard-v2}{37} \\
+4 & 4.1.5 & Ensure service account tokens are mounted only when Pods require Kubernetes API access & Chỉ gắn token ServiceAccount cho Pod có nhu cầu giao tiếp với Kubernetes API. Trường hợp chưa rõ phải được thẩm định. \sourcepage{cis-gke-standard-v2}{43} \\
+5 & 4.1.7 & Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster & Giới hạn các quyền có thể gán vai trò, mạo danh hoặc nâng quyền trong cluster. \sourcepage{cis-gke-standard-v2}{49} \\
+6 & 4.2.1 & Enforce baseline or restricted Pod Security Standards on workload namespaces & Yêu cầu namespace workload thực thi Pod Security Standards ở mức \texttt{baseline} hoặc \texttt{restricted}. \sourcepage{cis-gke-standard-v2}{60} \\
+7 & 4.3.1 & Enable NetworkPolicy enforcement with GKE Dataplane V2 or Calico & Xác minh cơ chế thực thi NetworkPolicy bằng GKE Dataplane V2 hoặc Calico được cấu hình phù hợp. \sourcepage{cis-gke-standard-v2}{64} \\
+8 & 4.6.1 & Use namespaces to separate workload administration and resource governance & Dùng namespace để tách phạm vi quản trị workload, quyền truy cập và quản trị tài nguyên. \sourcepage{cis-gke-standard-v2}{83} \\
+\end{longtable}

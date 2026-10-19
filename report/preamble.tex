@@ -1,0 +1,130 @@
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setotherlanguage{english}
+
+\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}[Scale=0.86]
+
+\usepackage[
+  a4paper,
+  top=2.5cm,
+  bottom=2.5cm,
+  left=3.0cm,
+  right=2.2cm,
+  headheight=15pt
+]{geometry}
+\usepackage{setspace}
+\setstretch{1.25}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0.2em}
+
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\centering}
+  {\MakeUppercase{Chương \thechapter}}
+  {0.5em}
+  {\Large\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{-20pt}{24pt}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.65em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection.}{0.65em}{}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Báo cáo đồ án CIS GKE}
+\fancyhead[R]{\small\nouppercase{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{longtable}
+% Compatibility patch for the longtable v4.24/XeTeX page-split warning.
+% Replace infinite shrink glue with stretch-only glue until the upstream fix ships.
+\makeatletter
+\patchcmd{\LT@output}{\copy\LT@foot\vss}{\copy\LT@foot\vfil}{}{}
+\patchcmd{\LT@output}{\copy\LT@foot\vss}{\copy\LT@foot\vfil}{}{}
+\makeatother
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{ragged2e}
+\usepackage{makecell}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit}
+
+\definecolor{reportblue}{HTML}{1F4E78}
+\definecolor{reportlight}{HTML}{EAF2F8}
+\definecolor{reportgray}{HTML}{F2F3F4}
+\captionsetup{font=small,labelfont=bf,labelsep=period}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\LTpre}{0.5em}
+\setlength{\LTpost}{0.5em}
+\setlength{\tabcolsep}{4pt}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcommand{\tablehead}{\bfseries}
+\newcommand{\sourcepage}[2]{\parencite[tr.~#2]{#1}}
+\newcommand{\notapplicable}{\emph{Không có trong benchmark}}
+
+\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=6,language=english,autolang=none]{biblatex}
+\DeclareLanguageMapping{vietnamese}{english}
+\addbibresource{references.bib}
+
+\usepackage{hyperref}
+\hypersetup{
+  unicode=true,
+  colorlinks=true,
+  linkcolor=reportblue,
+  citecolor=reportblue,
+  urlcolor=reportblue,
+  pdftitle={Báo cáo đồ án CIS GKE Benchmark v2.0.0},
+  pdfauthor={Nhóm thực hiện}
+}
+\usepackage{bookmark}
+\usepackage{microtype}
+\emergencystretch=2em
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% ---------------------------------------------------------------------------
+% Placeholder figure macro
+% Usage: \placeholderfig{filename-without-ext}{width}{height}{description}
+% If figures/<filename>.pdf exists  → \includegraphics
+% Otherwise                         → framed box with description text
+% ---------------------------------------------------------------------------
+\newcommand{\placeholderfig}[4]{%
+  \IfFileExists{figures/#1.pdf}{%
+    \includegraphics[width=#2]{#1}%
+  }{%
+    \begin{tikzpicture}
+      \draw[reportblue, thick, dashed, rounded corners]
+        (0,0) rectangle (#2,#3);
+      % Description — upper area
+      \node[text width=10cm, align=center, font=\small\color{reportblue}]
+        at (0.5*#2, 0.65*#3)
+        {#4};
+      % Status note — middle area
+      \node[font=\footnotesize\itshape\color{gray}]
+        at (0.5*#2, 0.35*#3)
+        {Sơ đồ sẽ được bổ sung};
+      % Filename — bottom area
+      \node[font=\tiny\ttfamily\color{gray}]
+        at (0.5*#2, 0.15*#3)
+        {figures/#1.pdf};
+    \end{tikzpicture}%
+  }%
+}

@@ -1,0 +1,45 @@
+\chapter{Giới thiệu đề tài}
+\label{chap:introduction}
+
+\section{Tóm tắt đề tài}
+\label{sec:summary}
+
+Google Kubernetes Engine (GKE) giúp đơn giản hóa việc triển khai và quản lý các ứng dụng trên Kubernetes. Tuy nhiên, việc sử dụng một nền tảng được quản lý không đồng nghĩa với việc mọi cấu hình trong hệ thống đều đảm bảo an toàn. Những sai sót trong quá trình cấu hình và quản lý quyền truy cập có thể tạo ra các rủi ro bảo mật. Vì vậy, việc đánh giá cấu hình theo một bộ tiêu chí thống nhất là cần thiết để phát hiện những điểm chưa phù hợp và đưa ra biện pháp khắc phục.
+
+CIS Benchmark cung cấp các khuyến nghị để thực hiện việc kiểm tra này theo một chuẩn chung. Khi làm hoàn toàn thủ công, người đánh giá phải thu thập nhiều loại cấu hình, chọn đúng benchmark và ghi lại bằng chứng cho từng kết luận. Quy trình đó mất thời gian, khó lặp lại nhất quán và dễ nhầm lẫn giữa GKE Standard với GKE Autopilot \parencite{cis-gke-standard-v2,cis-gke-autopilot-v2}.
+
+Đề tài hướng tới xây dựng một hệ thống hỗ trợ đánh giá và tăng cường bảo mật cho cả hai chế độ GKE. Terraform được dùng để tạo môi trường thử nghiệm có thể tái lập. Chương trình Python đọc cấu hình qua Kubernetes API và Google Cloud API, còn GitHub Actions hỗ trợ chạy quy trình từ xa. Kết quả hướng đến gồm trạng thái đánh giá có bằng chứng, báo cáo JSON/HTML và khả năng chạy lại kiểm tra sau khi biện pháp khắc phục đã được phê duyệt \parencite{project-overview,project-controls}.
+
+\section{Nội dung CIS Benchmark áp dụng cho đề tài}
+\label{sec:cis-overview}
+
+CIS Benchmark là tài liệu hướng dẫn kiểm tra cấu hình bảo mật theo từng nền tảng. Trong đề tài, benchmark được dùng để xác định nội dung cần quan sát, cách đánh giá và mức áp dụng của từng khuyến nghị. \textbf{Level 1} gồm các khuyến nghị cơ bản, thường có tác động vận hành thấp hơn. \textbf{Level 2} yêu cầu mức bảo vệ cao hơn và cần cân nhắc kỹ hơn trước khi áp dụng.
+
+Đối với cách thức đánh giá, CIS phân loại các khuyến nghị thành \textbf{Manual} và \textbf{Automated}. Automated là những khuyến nghị có thể được đánh giá đầy đủ bằng quy trình tự động, trong khi Manual yêu cầu thêm bước kiểm tra hoặc xác minh của người đánh giá. Đây là cách phân loại của CIS Benchmark, không phản ánh mức độ tự động hóa của công cụ do nhóm xây dựng.
+
+GKE Standard cho phép người dùng quản lý nhiều thành phần hơn, trong khi Autopilot chuyển một phần trách nhiệm vận hành cho Google Cloud. Do đó, cùng một chủ đề có thể có mức áp dụng khác nhau hoặc không xuất hiện ở một chế độ. Báo cáo sử dụng riêng CIS GKE Benchmark v2.0.0 cho Standard và CIS GKE Autopilot Benchmark v2.0.0 cho Autopilot \parencite{cis-gke-standard-v2,cis-gke-autopilot-v2}.
+
+\subsection{Các khuyến nghị Manual}
+\label{subsec:selected-manual}
+
+Ba control Manual được chọn tập trung vào việc sử dụng token của ServiceAccount, áp dụng Pod Security Standards và bật cơ chế thực thi NetworkPolicy. Bảng \ref{tab:selected-manual} giữ nguyên tên và phân loại từ hai benchmark \parencites[tr.~43, 60, 64]{cis-gke-standard-v2}[tr.~29, 46]{cis-gke-autopilot-v2}.
+
+\input{tables/selected-manual}
+
+\subsection{Các khuyến nghị Automated}
+\label{subsec:selected-automated}
+
+Ba control Automated được chọn liên quan đến ServiceAccount mặc định, quyền RBAC dành cho toàn bộ người dùng đã xác thực và chính sách mạng mặc định từ chối. Bảng \ref{tab:selected-automated} thể hiện đúng phạm vi của từng chế độ GKE \parencites[tr.~40, 55, 67]{cis-gke-standard-v2}[tr.~26, 41]{cis-gke-autopilot-v2}.
+
+\input{tables/selected-automated}
+
+\section{Phạm vi thực hiện của đề tài}
+\label{sec:project-scope}
+
+Sáu control được lựa chọn vì chúng bao quát ba lớp bảo vệ gần với hoạt động của workload. \textbf{ServiceAccount và RBAC} quyết định workload sử dụng danh tính nào và được phép thực hiện hành động gì. Nhóm kiểm tra việc dùng ServiceAccount mặc định, việc gắn token vào Pod và các liên kết RBAC có phạm vi quá rộng.
+
+\textbf{Pod Security Standards} đặt ra các yêu cầu an toàn cơ bản cho Pod trong namespace chạy ứng dụng. Control được chọn giúp đánh giá namespace có áp dụng mức baseline hoặc restricted phù hợp hay không. \textbf{NetworkPolicy} kiểm soát kết nối giữa các workload. Nhóm kiểm tra cơ chế thực thi NetworkPolicy và sự hiện diện của chính sách mặc định từ chối để hạn chế lưu lượng ngoài dự kiến.
+
+Phạm vi trên không đại diện cho toàn bộ CIS Benchmark v2.0.0 và luôn được đánh giá theo đúng chế độ GKE \parencite{cis-gke-standard-v2,cis-gke-autopilot-v2,project-overview}. Riêng với 4.3.2, việc kiểm tra default-deny cho cả ingress và egress, sau đó thử nghiệm lưu lượng có kiểm soát, là phần mở rộng thực nghiệm do nhóm thiết kế. Nội dung này không được trình bày như toàn bộ Audit Procedure có sẵn trong CIS Benchmark \parencite{project-controls}.
+
+Bên cạnh việc đánh giá cấu hình, đề tài còn hướng đến thử nghiệm các biện pháp tăng cường bảo mật trong môi trường GKE. Những thay đổi này chỉ được áp dụng sau khi có phê duyệt. Sau đó, nhóm kiểm tra hoạt động của ứng dụng và thực hiện đánh giá lại theo CIS để xác minh hiệu quả khắc phục.
