@@ -858,6 +858,7 @@ Sau review, chỉ đổi `conclusion` khi có `reviewer`, `reviewed_at`, evidenc
 ```python
 # Pseudocode interface đề xuất — không phải mã sản phẩm đã chạy.
 
+
 def evaluate_control(control_spec, normalized_evidence, audit_context):
     """Return findings with status, evidence refs, and completeness metadata."""
     # B xác định schema, rule interface và cách tổng hợp.

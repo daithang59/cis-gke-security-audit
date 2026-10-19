@@ -1,13 +1,13 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "cis-gke-audit"
 version = "0.1.0"
 description = "CIS Benchmark Security Audit tool for Google Kubernetes Engine (GKE)"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [
     { name = "Audit Team" }
@@ -32,9 +32,13 @@ dev = [
 [project.scripts]
 cis-gke-audit = "cis_gke_audit.cli:app"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py312"
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B"]
@@ -42,3 +46,4 @@ select = ["E", "F", "I", "B"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+

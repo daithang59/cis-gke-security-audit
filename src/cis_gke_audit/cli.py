@@ -25,13 +25,11 @@ def audit(
     """Run CIS benchmark audit against a GKE cluster."""
     console.print("[bold green]Starting CIS GKE Security Audit[/bold green]")
     console.print(
-        f"Project: [cyan]{project_id}[/cyan] | "
-        f"Cluster: [cyan]{cluster_name}[/cyan] ({location})"
+        f"Project: [cyan]{project_id}[/cyan] | Cluster: [cyan]{cluster_name}[/cyan] ({location})"
     )
     console.print(f"Format: [yellow]{output_format}[/yellow]")
     console.print(
-        "[dim]Audit engine initialized. "
-        "Ready to execute collectors and evaluation rules.[/dim]"
+        "[dim]Audit engine initialized. Ready to execute collectors and evaluation rules.[/dim]"
     )
 
 

@@ -30,9 +30,12 @@ Hệ thống đánh giá và tăng cường bảo mật tự động dành cho G
 - `.github/CODEOWNERS`: Phân quyền với placeholder usernames, tối thiểu 2 reviewers/vùng, ghi chú thay thế và giới hạn GitHub private Free.
 - `.github/workflows/ci.yml`: Pipeline CI cấu hình 2 jobs `terraform-checks` và `python-checks`, trigger trên push/PR vào `main`, quyền `contents: read`.
 - `.gitkeep`: Được bảo lưu trong tất cả các thư mục chưa có code (`terraform/*`, `tests/fixtures`, `tests/integration`, `docs/architecture`, `docs/runbooks`).
+- `pyproject.toml`: Đã chuẩn hóa cấu hình `setuptools` src-layout (`tool.setuptools.packages.find where = ["src"]`), nhóm `dev` gồm `pytest`, `pytest-cov`, `ruff`, `mypy`.
+- `tests/unit/`: Bổ sung `__init__.py` và `test_smoke.py` xác minh khả năng import package thật và toàn bộ submodules (`collectors`, `evaluation`, `normalizers`, `reporting`, `rules`, `cli`).
 
 ## Next Actions / Open Decisions for A, B, C
 - **Role B:** Xác nhận schema trong `docs/contracts.md` và hiện thực hóa thành Pydantic models trong `src/cis_gke_audit/normalizers/`.
 - **Role A:** Review các trường Google Cloud API trong `docs/contracts.md` và thiết kế skeleton cho GCP collector.
 - **Role C:** Cập nhật `docs/cis-control-matrix.md` từ format cũ sang CIS Benchmark v2.0.0 chuẩn, đồng thời chuẩn bị manifest cho lab.
+
 

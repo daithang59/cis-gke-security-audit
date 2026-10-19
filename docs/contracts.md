@@ -55,31 +55,34 @@ class ClusterMode(str, Enum):
     STANDARD = "STANDARD"
     AUTOPILOT = "AUTOPILOT"
 
+
 class RawCloudClusterData:
     project_id: str
     location: str
     cluster_name: str
-    mode: ClusterMode                        # Tự động xác định từ cluster.autopilot.enabled
-    cluster_version: str                     # GKE control plane version
-    status: str                              # RUNNING, PROVISIONING, etc.
-    
+    mode: ClusterMode  # Tự động xác định từ cluster.autopilot.enabled
+    cluster_version: str  # GKE control plane version
+    status: str  # RUNNING, PROVISIONING, etc.
+
     # Network & Datapath fields (phục vụ Rule 4.3.1)
-    datapath_provider: str                   # "ADVANCED_DATAPATH" (Dataplane V2) hoặc "DATAPATH_PROVIDER_UNSPECIFIED"
-    network_policy_enabled: bool             # addon networkPolicyConfig.disabled == False (Standard)
-    network_policy_provider: str             # "CALICO" hoặc "PROVIDER_UNSPECIFIED"
-    
+    datapath_provider: (
+        str  # "ADVANCED_DATAPATH" (Dataplane V2) hoặc "DATAPATH_PROVIDER_UNSPECIFIED"
+    )
+    network_policy_enabled: bool  # addon networkPolicyConfig.disabled == False (Standard)
+    network_policy_provider: str  # "CALICO" hoặc "PROVIDER_UNSPECIFIED"
+
     # Control Plane Security fields
     master_authorized_networks_enabled: bool
-    private_cluster_enabled: bool            # privateClusterConfig.enablePrivateNodes
-    private_endpoint_enabled: bool           # privateClusterConfig.enablePrivateEndpoint
-    
+    private_cluster_enabled: bool  # privateClusterConfig.enablePrivateNodes
+    private_endpoint_enabled: bool  # privateClusterConfig.enablePrivateEndpoint
+
     # Node Security fields
-    workload_identity_pool: Optional[str]    # workloadIdentityConfig.workloadPool
-    shielded_nodes_enabled: bool             # shieldedNodes.enabled
-    
+    workload_identity_pool: Optional[str]  # workloadIdentityConfig.workloadPool
+    shielded_nodes_enabled: bool  # shieldedNodes.enabled
+
     # Metadata thu thập
-    collected_at: str                        # ISO 8601 UTC timestamp
-    collector_error: Optional[str]           # Ghi nhận lỗi nếu thiếu quyền IAM (e.g. 403 Forbidden)
+    collected_at: str  # ISO 8601 UTC timestamp
+    collector_error: Optional[str]  # Ghi nhận lỗi nếu thiếu quyền IAM (e.g. 403 Forbidden)
 ```
 
 ### 2.2. Kubernetes Workload & RBAC Metadata (`RawK8sResourceData`) — *Role B review*
@@ -88,29 +91,35 @@ Dữ liệu do Kubernetes Collector (Role B) thu thập qua K8s API:
 ```python
 class RawK8sWorkloadData:
     namespace: str
-    kind: str                                # Pod, Deployment, DaemonSet, StatefulSet, Job
+    kind: str  # Pod, Deployment, DaemonSet, StatefulSet, Job
     name: str
-    service_account_name: str                # Phục vụ Rule 4.1.4 (xác định xem có dùng default SA)
-    automount_service_account_token: Optional[bool]  # Phục vụ Rule 4.1.5 (mount token ở Pod/SA spec)
+    service_account_name: str  # Phục vụ Rule 4.1.4 (xác định xem có dùng default SA)
+    automount_service_account_token: Optional[
+        bool
+    ]  # Phục vụ Rule 4.1.5 (mount token ở Pod/SA spec)
     labels: Dict[str, str]
-    pod_security_labels: Dict[str, str]      # Labels PSS trên namespace (phục vụ Rule 4.2.1)
+    pod_security_labels: Dict[str, str]  # Labels PSS trên namespace (phục vụ Rule 4.2.1)
+
 
 class RawK8sRBACData:
-    kind: str                                # RoleBinding hoặc ClusterRoleBinding
+    kind: str  # RoleBinding hoặc ClusterRoleBinding
     name: str
-    namespace: Optional[str]                 # None đối với ClusterRoleBinding
-    role_ref: Dict[str, str]                 # kind, name
-    subjects: List[Dict[str, str]]           # kind, name, namespace (tìm system:authenticated - Rule 4.1.9)
-    is_system_binding: bool                  # True nếu thuộc whitelist mặc định của K8s/GKE
+    namespace: Optional[str]  # None đối với ClusterRoleBinding
+    role_ref: Dict[str, str]  # kind, name
+    subjects: List[Dict[str, str]]  # kind, name, namespace (tìm system:authenticated - Rule 4.1.9)
+    is_system_binding: bool  # True nếu thuộc whitelist mặc định của K8s/GKE
+
 
 class RawK8sNetworkPolicyData:
     namespace: str
     name: str
     pod_selector: Dict[str, Any]
-    policy_types: List[str]                  # ["Ingress"], ["Egress"], hoặc ["Ingress", "Egress"]
+    policy_types: List[str]  # ["Ingress"], ["Egress"], hoặc ["Ingress", "Egress"]
     has_ingress_rules: bool
     has_egress_rules: bool
-    is_default_deny_all: bool                # True nếu podSelector: {} và policyTypes có Ingress + Egress không rules
+    is_default_deny_all: (
+        bool  # True nếu podSelector: {} và policyTypes có Ingress + Egress không rules
+    )
 ```
 
 ### 2.3. Hợp đồng Kết quả Đánh giá (`FindingResult`) — *Role C review ngữ nghĩa*
@@ -118,33 +127,35 @@ Mỗi kết quả kiểm tra của một control trên một tài nguyên mục 
 
 ```python
 class EvaluationStatus(str, Enum):
-    PASS = "PASS"             # Thỏa mãn khuyến nghị của CIS Benchmark
-    FAIL = "FAIL"             # Vi phạm khuyến nghị của CIS Benchmark
-    REVIEW = "REVIEW"         # Control Manual - cần người thẩm định xác nhận ngữ cảnh nghiệp vụ
-    NOT_APPLICABLE = "N/A"    # Control không tồn tại trong benchmark của mode này
-    ERROR = "ERROR"           # Lỗi thu thập dữ liệu (thiếu quyền, timeout, API hỏng)
+    PASS = "PASS"  # Thỏa mãn khuyến nghị của CIS Benchmark
+    FAIL = "FAIL"  # Vi phạm khuyến nghị của CIS Benchmark
+    REVIEW = "REVIEW"  # Control Manual - cần người thẩm định xác nhận ngữ cảnh nghiệp vụ
+    NOT_APPLICABLE = "N/A"  # Control không tồn tại trong benchmark của mode này
+    ERROR = "ERROR"  # Lỗi thu thập dữ liệu (thiếu quyền, timeout, API hỏng)
+
 
 class CISBenchmarkType(str, Enum):
     GKE_STANDARD_V2_0_0 = "CIS Google Kubernetes Engine (GKE) Benchmark v2.0.0"
     GKE_AUTOPILOT_V2_0_0 = "CIS Google Kubernetes Engine (GKE) Autopilot Benchmark v2.0.0"
 
+
 class FindingResult:
-    rule_id: str                             # "4.1.4", "4.1.5", "4.1.9", "4.2.1", "4.3.1", "4.3.2"
-    benchmark: CISBenchmarkType              # Bộ benchmark được áp dụng
-    cluster_mode: ClusterMode                # STANDARD hoặc AUTOPILOT
-    cis_level: str                           # "Level 1" hoặc "Level 2"
-    assessment_type: str                     # "Automated" hoặc "Manual"
-    
-    status: EvaluationStatus                 # PASS | FAIL | REVIEW | N/A | ERROR
-    target_resource: str                     # e.g., "k8s/namespace/default/Pod/web-app"
-    
-    title: str                               # Tên tiêu chuẩn của CIS Control
-    evidence: Dict[str, Any]                 # Bằng chứng cấu hình thu được (observed data vs expected)
-    rationale: str                           # Giải thích vì sao đạt / không đạt / câu hỏi Manual cần thẩm định
-    remediation_guidance: str                # Tóm lược hướng dẫn khắc phục tham chiếu từ benchmark
-    
-    timestamp: str                           # Thời điểm thực hiện đánh giá (ISO 8601 UTC)
-    evaluated_by: str                        # Version của audit engine
+    rule_id: str  # "4.1.4", "4.1.5", "4.1.9", "4.2.1", "4.3.1", "4.3.2"
+    benchmark: CISBenchmarkType  # Bộ benchmark được áp dụng
+    cluster_mode: ClusterMode  # STANDARD hoặc AUTOPILOT
+    cis_level: str  # "Level 1" hoặc "Level 2"
+    assessment_type: str  # "Automated" hoặc "Manual"
+
+    status: EvaluationStatus  # PASS | FAIL | REVIEW | N/A | ERROR
+    target_resource: str  # e.g., "k8s/namespace/default/Pod/web-app"
+
+    title: str  # Tên tiêu chuẩn của CIS Control
+    evidence: Dict[str, Any]  # Bằng chứng cấu hình thu được (observed data vs expected)
+    rationale: str  # Giải thích vì sao đạt / không đạt / câu hỏi Manual cần thẩm định
+    remediation_guidance: str  # Tóm lược hướng dẫn khắc phục tham chiếu từ benchmark
+
+    timestamp: str  # Thời điểm thực hiện đánh giá (ISO 8601 UTC)
+    evaluated_by: str  # Version của audit engine
 ```
 
 ### 2.4. Khung Báo cáo Tổng thể (`AuditReport`) & Metadata Coverage
@@ -152,23 +163,25 @@ Tách biệt rõ giữa **mức độ hỗ trợ của công cụ (Tool Coverage
 
 ```python
 class RuleCoverageStatus(str, Enum):
-    IMPLEMENTED = "IMPLEMENTED"         # Đã code xong rule logic
-    NOT_IMPLEMENTED = "NOT_IMPLEMENTED" # Nằm trong scope dự án nhưng chưa hoàn thiện code
-    OUT_OF_SCOPE = "OUT_OF_SCOPE"       # Nằm ngoài phạm vi P0 của dự án
+    IMPLEMENTED = "IMPLEMENTED"  # Đã code xong rule logic
+    NOT_IMPLEMENTED = "NOT_IMPLEMENTED"  # Nằm trong scope dự án nhưng chưa hoàn thiện code
+    OUT_OF_SCOPE = "OUT_OF_SCOPE"  # Nằm ngoài phạm vi P0 của dự án
+
 
 class ControlCoverageMeta:
     rule_id: str
     standard_support: RuleCoverageStatus
     autopilot_support: RuleCoverageStatus
-    owner: str                          # "Role B" hoặc "Role C"
+    owner: str  # "Role B" hoặc "Role C"
+
 
 class AuditReport:
     report_id: str
     generated_at: str
-    target_cluster: Dict[str, str]      # project, location, cluster_name, mode
-    is_live_audit: bool                 # True nếu chạy trên GKE thật; False nếu chạy từ test fixtures
-    
-    summary: Dict[str, int]             # {"PASS": 0, "FAIL": 0, "REVIEW": 0, "N/A": 0, "ERROR": 0}
+    target_cluster: Dict[str, str]  # project, location, cluster_name, mode
+    is_live_audit: bool  # True nếu chạy trên GKE thật; False nếu chạy từ test fixtures
+
+    summary: Dict[str, int]  # {"PASS": 0, "FAIL": 0, "REVIEW": 0, "N/A": 0, "ERROR": 0}
     findings: List[FindingResult]
     coverage_metadata: List[ControlCoverageMeta]
 ```
