@@ -1,4 +1,5 @@
 from typer.testing import CliRunner
+
 from cis_gke_audit.cli import app
 
 runner = CliRunner()
