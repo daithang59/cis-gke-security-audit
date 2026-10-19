@@ -28,7 +28,7 @@ Hệ thống đánh giá và tăng cường bảo mật tự động dành cho G
 - `.github/ISSUE_TEMPLATE/`: `task.yml` và `bug_report.yml` dạng GitHub Issue Forms hợp lệ.
 - `docs/contracts.md`: DRAFT khung schema dữ liệu (cần B xác nhận types, A review Cloud fields, C review security semantics).
 - `.github/CODEOWNERS`: Phân quyền với placeholder usernames, tối thiểu 2 reviewers/vùng, ghi chú thay thế và giới hạn GitHub private Free.
-- `.github/workflows/ci.yml`: Pipeline CI cấu hình 2 jobs `terraform-checks` và `python-checks`, trigger trên push/PR vào `main`, quyền `contents: read`.
+- `.github/workflows/ci.yml`: Pipeline CI cấu hình 2 jobs `terraform-checks` và `python-checks`, trigger trên push/PR vào `main`, quyền `contents: read`. Đã nâng cấp các actions sang Node.js 24 (`actions/checkout@v7`, `hashicorp/setup-terraform@v4`, `actions/setup-python@v7`) trên nhánh `feat/a-ci-node24-upgrade`.
 - `.gitkeep`: Được bảo lưu trong tất cả các thư mục chưa có code (`terraform/*`, `tests/fixtures`, `tests/integration`, `docs/architecture`, `docs/runbooks`).
 - `pyproject.toml`: Đã chuẩn hóa cấu hình `setuptools` src-layout (`tool.setuptools.packages.find where = ["src"]`), nhóm `dev` gồm `pytest`, `pytest-cov`, `ruff`, `mypy`.
 - `tests/unit/`: Bổ sung `__init__.py` và `test_smoke.py` xác minh khả năng import package thật và toàn bộ submodules (`collectors`, `evaluation`, `normalizers`, `reporting`, `rules`, `cli`).
