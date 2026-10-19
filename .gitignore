@@ -54,3 +54,10 @@ Thumbs.db
 .agent-memory/
 .agents/
 
+# Reference CIS Documents & Benchmark PDFs
+01_CIS_GKE_TongQuan_CoHinh.md
+02_CIS_GKE_PhanCong_PhoiHop_CoHinh.md
+03_CIS_GKE_DacTa_Controls_CoHinh.md
+*.pdf
+
+
