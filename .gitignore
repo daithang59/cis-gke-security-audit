@@ -49,3 +49,8 @@ artifacts/
 .idea/
 .DS_Store
 Thumbs.db
+
+# AI Agent Memory & Workspace Artifacts
+.agent-memory/
+.agents/
+
