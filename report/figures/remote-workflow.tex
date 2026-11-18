@@ -1,22 +1,19 @@
+\resizebox{0.98\textwidth}{!}{%
 \begin{tikzpicture}[
-  node distance=5mm,
+  node distance=4mm and 5mm,
   every node/.style={font=\scriptsize,align=center},
-  box/.style={draw=reportblue,rounded corners,fill=reportlight,text width=0.13\textwidth,minimum height=13mm},
+  box/.style={draw=reportblue,rounded corners=4pt,fill=reportlight,text width=2.8cm,minimum height=13mm},
   arrow/.style={-{Latex[length=1.8mm]},thick,draw=reportblue}
 ]
-  \node[box] (trigger) {Kích hoạt workflow};
-  \node[box,right=of trigger] (runner) {Actions runner};
-  \node[box,right=of runner] (auth) {OIDC / Workload Identity Federation};
-  \node[box,right=of auth] (iam) {IAM / RBAC\\quyền đọc};
-  \node[box,below=8mm of iam] (network) {Kết nối mạng tới\\Cloud / GKE API};
-  \node[box,left=of network] (engine) {Audit Engine};
-  \node[box,left=of engine] (reports) {JSON/HTML};
-  \node[box,left=of reports] (artifacts) {Tệp tạo tác workflow};
-  \draw[arrow] (trigger) -- (runner);
-  \draw[arrow] (runner) -- (auth);
-  \draw[arrow] (auth) -- (iam);
-  \draw[arrow] (iam) -- (network);
-  \draw[arrow] (network) -- (engine);
-  \draw[arrow] (engine) -- (reports);
-  \draw[arrow] (reports) -- (artifacts);
-\end{tikzpicture}
+  \node[box] (trigger) {1. Kích hoạt CI/CD\\(Lịch Cron /\\Workflow Dispatch)};
+  \node[box,right=of trigger] (auth) {2. Xác thực WIF/OIDC\\(Keyless, đổi lấy\\STS token tạm)};
+  \node[box,right=of auth] (api) {3. Kết nối API\\Quyền chỉ đọc\\(GCP \& K8s)};
+  \node[box,right=of api] (engine) {4. Chạy kịch bản\\Python CIS Engine\\(Matrix nhiều cụm)};
+  \node[box,right=of engine] (output) {5. Lưu Artifacts\\\& Hiển thị tóm tắt\\(Job Summary)};
+
+  \draw[arrow] (trigger) -- (auth);
+  \draw[arrow] (auth) -- (api);
+  \draw[arrow] (api) -- (engine);
+  \draw[arrow] (engine) -- (output);
+\end{tikzpicture}%
+}

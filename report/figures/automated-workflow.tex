@@ -1,21 +1,27 @@
+\resizebox{0.98\textwidth}{!}{%
 \begin{tikzpicture}[
-  node distance=5mm and 7mm,
+  node distance=4mm and 6mm,
   every node/.style={font=\scriptsize,align=center},
-  box/.style={draw=reportblue,rounded corners,fill=reportlight,text width=0.135\textwidth,minimum height=13mm},
+  box/.style={draw=reportblue,rounded corners=4pt,fill=reportlight,text width=2.8cm,minimum height=13mm},
+  subbox/.style={draw=reportblue!80,rounded corners=3pt,fill=white,text width=2.8cm,minimum height=11mm},
   arrow/.style={-{Latex[length=1.8mm]},thick,draw=reportblue}
 ]
-  \node[box] (target) {Chọn cụm và chế độ};
-  \node[box,right=of target] (bench) {Chọn benchmark};
-  \node[box,right=of bench,yshift=7mm] (k8s) {Thu thập từ\\Kubernetes API};
-  \node[box,right=of bench,yshift=-7mm] (gcp) {Thu thập từ\\Google Cloud API};
-  \node[box,right=13mm of k8s,yshift=-7mm] (normalize) {Chuẩn hóa bằng chứng};
-  \node[box,below=8mm of normalize] (rules) {Chọn tiêu chí và đánh giá};
-  \node[box,left=of rules] (report) {Báo cáo JSON/HTML};
-  \draw[arrow] (target) -- (bench);
-  \draw[arrow] (bench) -- (k8s);
-  \draw[arrow] (bench) -- (gcp);
-  \draw[arrow] (k8s) -- (normalize);
-  \draw[arrow] (gcp) -- (normalize);
-  \draw[arrow] (normalize) -- (rules);
-  \draw[arrow] (rules) -- (report);
-\end{tikzpicture}
+  \node[box] (target) {1. Nhận diện Target\\\& Chế độ GKE\\(Standard/Autopilot)};
+  
+  \node[subbox,right=of target,yshift=8mm] (k8s) {K8s Root Collector\\(Pod, SA, RBAC,\\NetPol, Namespace)};
+  \node[subbox,right=of target,yshift=-8mm] (gcp) {GCP Root Collector\\(Cluster, Subnet,\\Artifact Registry)};
+  
+  \node[box,right=of target,xshift=3.4cm] (norm) {2. Chuẩn hóa\\bằng chứng\\(Evidence Schema)};
+  
+  \node[box,right=of norm] (eval) {3. Đánh giá quy tắc\\Auto $\rightarrow$ PASS/FAIL\\Manual $\rightarrow$ REVIEW};
+  
+  \node[box,right=of eval] (report) {4. Xuất báo cáo\\Đa định dạng\\(JSON / HTML)};
+
+  \draw[arrow] (target.east) -- ++(0.2,0) |- (k8s.west);
+  \draw[arrow] (target.east) -- ++(0.2,0) |- (gcp.west);
+  \draw[arrow] (k8s.east) -| ++(0.2,-0.4) -- (norm.west);
+  \draw[arrow] (gcp.east) -| ++(0.2,0.4) -- (norm.west);
+  \draw[arrow] (norm) -- (eval);
+  \draw[arrow] (eval) -- (report);
+\end{tikzpicture}%
+}
