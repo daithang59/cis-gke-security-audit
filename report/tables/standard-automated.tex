@@ -19,7 +19,7 @@
 2 & 3.1.2 & Ensure that the kubelet kubeconfig file ownership is set to root:root & Kiểm tra tệp kubeconfig của kubelet thuộc sở hữu \texttt{root:root}. \sourcepage{cis-gke-standard-v2}{21} \\
 3 & 3.1.3 & Ensure that the kubelet configuration file has permissions set to 644 & Kiểm tra tệp cấu hình kubelet có quyền \texttt{644} hoặc chặt hơn. \sourcepage{cis-gke-standard-v2}{24} \\
 4 & 3.1.4 & Ensure that the kubelet configuration file ownership is set to root:root & Kiểm tra tệp cấu hình kubelet thuộc sở hữu \texttt{root:root}. \sourcepage{cis-gke-standard-v2}{27} \\
-5 & 4.1.4 & Ensure that default service accounts are not actively used & Phát hiện workload đang sử dụng ServiceAccount \texttt{default} thay vì tài khoản chuyên biệt. \sourcepage{cis-gke-standard-v2}{40} \\
+5 & 4.1.4 & Ensure that default service accounts are not actively used & \textbf{P0.} Phát hiện workload đang sử dụng ServiceAccount \texttt{default} thay vì tài khoản chuyên biệt. \sourcepage{cis-gke-standard-v2}{40} \\
 6 & 4.1.6 & Avoid granting cluster admin level access through the system:masters group & Tránh cấp quyền quản trị cluster thông qua nhóm \texttt{system:masters}. \sourcepage{cis-gke-standard-v2}{46} \\
 7 & 4.1.9 & Avoid binding RBAC roles to all authenticated users & Phát hiện RBAC tùy biến cấp quyền cho toàn bộ nhóm \texttt{system:authenticated}. \sourcepage{cis-gke-standard-v2}{55} \\
 8 & 5.2.1 & Use custom least privilege service accounts for GKE node pools & Yêu cầu node pool dùng service account riêng với quyền tối thiểu thay cho tài khoản mặc định rộng quyền. \sourcepage{cis-gke-standard-v2}{106} \\
