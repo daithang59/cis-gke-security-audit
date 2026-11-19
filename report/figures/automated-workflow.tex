@@ -8,12 +8,12 @@
 ]
   \node[box] (target) {1. Nhận diện Target\\\& Chế độ GKE\\(Standard/Autopilot)};
   
-  \node[subbox,right=of target,yshift=8mm] (k8s) {K8s Root Collector\\(Pod, SA, RBAC,\\NetPol, Namespace)};
-  \node[subbox,right=of target,yshift=-8mm] (gcp) {GCP Root Collector\\(Cluster, Subnet,\\Artifact Registry)};
+  \node[subbox,right=of target,yshift=8mm] (k8s) {K8sCollector\\Workload, Namespace,\\SA, RBAC, Policy};
+  \node[subbox,right=of target,yshift=-8mm] (gcp) {GcpCollector\\Cụm, subnet,\\dịch vụ, kho image};
   
   \node[box,right=of target,xshift=3.4cm] (norm) {2. Chuẩn hóa\\bằng chứng\\(Evidence Schema)};
   
-  \node[box,right=of norm] (eval) {3. Đánh giá quy tắc\\Auto $\rightarrow$ PASS/FAIL\\Manual $\rightarrow$ REVIEW};
+  \node[box,right=of norm] (eval) {3. Áp dụng rule\\và xác định\\trạng thái};
   
   \node[box,right=of eval] (report) {4. Xuất báo cáo\\Đa định dạng\\(JSON / HTML)};
 

@@ -6,10 +6,10 @@
   arrow/.style={-{Latex[length=2mm]},thick,draw=reportblue}
 ]
   \node[box] (login) {1. Mở Terminal \&\\Xác thực CLI\\(\texttt{gcloud}, \texttt{kubectl})};
-  \node[box,right=of login] (root) {2. Chạy lệnh root\\Lấy JSON thô\\(Cluster, Workload)};
+  \node[box,right=of login] (root) {2. Đọc nguồn Cloud\\và Kubernetes\\theo phạm vi};
   \node[box,right=of root] (filter) {3. Lọc trường JSON\\Tra cứu tài liệu\\CIS Benchmark PDF};
-  \node[box,right=of filter] (review) {4. Xác minh ngữ cảnh\\Nghiệp vụ \&\\Phán quyết (Manual)};
-  \node[box,right=of review] (record) {5. Ghi nhận thủ công\\Vào biên bản\\(Excel / Văn bản)};
+  \node[box,right=of filter] (review) {4. Đối chiếu tiêu chí\\và xác minh\\ngữ cảnh};
+  \node[box,right=of review] (record) {5. Ghi kết luận,\\minh chứng\\và phạm vi};
 
   \draw[arrow] (login) -- (root);
   \draw[arrow] (root) -- (filter);

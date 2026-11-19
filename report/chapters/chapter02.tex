@@ -4,7 +4,9 @@
 \section{Phương pháp thủ công (Manual)}
 \label{sec:manual-method}
 
-Phương pháp thủ công là cách tiếp cận trực tiếp trên terminal máy trạm khi khảo sát một cụm GKE độc lập. Thay vì chạy hàng chục lệnh rời rạc, người đánh giá xác định hai nhóm lệnh gốc (\emph{Root Commands}) đại diện cho hai tầng quản lý để thu thập toàn bộ dữ liệu thô: (1)~\emph{Lệnh root Google Cloud API:} \texttt{gcloud container clusters describe -{}-format=json} trích xuất toàn bộ siêu dữ liệu cụm (chế độ Standard/Autopilot, Dataplane V2 4.3.1, Flow Logs 5.6.1/5.4.1, Authorized Networks 5.6.3/5.4.2; kết hợp lệnh \texttt{gcloud artifacts repositories describe} cho mục 5.1.1); (2)~\emph{Lệnh root Kubernetes API:} \texttt{kubectl get pods,sa,roles,bindings,netpol -A -o json} thu thập snapshot toàn diện workload và RBAC (SA mặc định 4.1.4, token automount 4.1.5, nhãn PSS 4.2.1, default-deny 4.3.2, securityContext 4.6.3).
+Người đánh giá dùng terminal để thu thập bằng chứng cho một cụm theo hai nhóm lệnh gốc. Với Google Cloud, lệnh \texttt{gcloud container clusters describe} đọc cấu hình cụm và xác định subnet. Truy vấn \texttt{compute networks subnets describe} đọc trạng thái Flow Logs của subnet. Trong dự án chứa image, lệnh \texttt{services list -{}-enabled} đọc các API đã bật và \texttt{artifacts repositories describe} đọc cấu hình quét của kho Docker liên quan.
+
+Với Kubernetes, dùng \texttt{kubectl get} để đọc các tài nguyên. Dữ liệu thu được gồm Namespace, Pod, mẫu workload, ServiceAccount và NetworkPolicy. Để đối chiếu RBAC, đọc thêm Role, ClusterRole, RoleBinding và ClusterRoleBinding. Mục \ref{subsec:ch3-manual-prep} trình bày cú pháp và cách giới hạn phạm vi.
 
 \begin{center}
   \captionsetup{hypcap=false}
@@ -13,76 +15,70 @@ Phương pháp thủ công là cách tiếp cận trực tiếp trên terminal m
   \label{fig:manual-workflow}
 \end{center}
 
-Quy trình thực hiện cụ thể bao gồm các bước:
+Các bước thực hiện dự kiến gồm
 \begin{enumerate}[leftmargin=1.0cm,itemsep=1pt,parsep=0pt]
-  \item \textbf{Xác thực và nạp context:} Đăng nhập qua \texttt{gcloud auth login} và tải cấu hình kết nối cụm qua \texttt{gcloud container clusters get-credentials}.
-  \item \textbf{Thực thi lệnh root và lọc JSON:} Chạy hai lệnh root, dùng công cụ \texttt{jq} hoặc cú pháp \texttt{jsonpath} để bóc tách các trường cấu hình mục tiêu.
-  \item \textbf{Đối chiếu CIS Benchmark:} Mở tài liệu PDF \emph{CIS GKE Benchmark v2.0.0} tương ứng (Standard hoặc Autopilot), so sánh từng trường với mục \emph{Audit Procedure}.
-  \item \textbf{Xác minh ngữ cảnh nghiệp vụ:} Với mục Automated (như 4.1.4), kiểm tra trường tài khoản; với mục Manual (như 4.1.5), kiểm tra token mount hiệu lực và phỏng vấn nhóm phát triển xem workload có thực sự cần gọi Kubernetes API hay không.
-  \item \textbf{Ghi nhận biên bản kiểm toán:} Lưu trữ bằng chứng và kết luận vào bảng tính.
+  \item Xác thực bằng danh tính có quyền đọc. Đối chiếu dự án, vị trí, cụm và kube context trước khi truy vấn.
+  \item Thu thập JSON theo phạm vi. Ghi giá trị quan sát, định danh tài nguyên, thời điểm và lỗi đọc. Loại thông tin xác thực và dữ liệu nhạy cảm khỏi bằng chứng.
+  \item Chọn benchmark theo chế độ của cụm và đối chiếu \emph{Audit Procedure}. Với khuyến nghị Manual và các trường hợp cần ngoại lệ, xác nhận ngữ cảnh với người phụ trách workload.
+  \item Ghi kết luận và bằng chứng trong biên bản. Ghi rõ phần tài nguyên chưa đánh giá được. Các phép thử chủ động thuộc phiên lab được cấp quyền riêng.
 \end{enumerate}
 
-\paragraph{Đánh giá phương pháp thủ công:} Trực quan, dễ áp dụng nhanh cho tài nguyên nhỏ nhưng tốn công sức $O(N)$, dễ nhầm lẫn giữa hai chế độ cụm và khó lặp lại nhất quán.
+Biên bản Manual là căn cứ đối chiếu dự kiến cho cùng cụm, phạm vi và cấu hình khi kiểm chứng Local và Remote.
 
 \clearpage
 \section{Phương pháp tự động (Automated)}
 \label{sec:automated-method}
 
-Nhóm phát triển công cụ dòng lệnh Python mang tên \texttt{cis-gke-audit}. Thay vì gõ lệnh thủ công, công cụ trừu tượng hóa hai nguồn dữ liệu gốc thành hai bộ thu thập (\emph{Root Collectors}) bằng SDK: \texttt{GcpCollector} (module \texttt{ClusterManagerClient}, \texttt{ArtifactRegistryClient}) và \texttt{K8sCollector} (\texttt{kubernetes.client}), thu thập snapshot cấu hình trong bộ nhớ chỉ mất vài giây theo Hình \ref{fig:automated-workflow}.
+Kho mã nguồn hiện có CLI khung \texttt{cis-gke-audit}. Hình \ref{fig:automated-workflow} mô tả chu trình dự kiến khi hoàn thiện hai bộ thu thập \texttt{GcpCollector} và \texttt{K8sCollector}, bộ đánh giá và bộ xuất báo cáo.
 
 \begin{center}
   \captionsetup{hypcap=false}
   \input{figures/automated-workflow}
-  \captionof{figure}{Kiến trúc chu trình đánh giá tự động của công cụ Python CLI}
+  \captionof{figure}{Chu trình đánh giá dự kiến của công cụ Python CLI}
   \label{fig:automated-workflow}
 \end{center}
 
-Chu trình đánh giá tự động bao gồm 5 giai đoạn xử lý khép kín:
 \begin{enumerate}[leftmargin=1.0cm,itemsep=0.5pt,parsep=0pt]
-  \item \textbf{Target \& Mode Detection:} Gọi GCP SDK nhận diện cụm Standard hay Autopilot (\texttt{autopilot.enabled}) để nạp đúng Rule Registry (bỏ qua 4.2.1 và 4.3.2 trên Autopilot).
-  \item \textbf{Root Collectors:} Chạy song song \texttt{K8sCollector} và \texttt{GcpCollector} lấy snapshot cấu hình.
-  \item \textbf{Evidence Normalization:} Chuẩn hóa dữ liệu thô về Schema chung, đính kèm URI và timestamp.
-  \item \textbf{Rule Evaluation \& Chuyển đổi Manual:} Mục Automated tự đối chiếu logic ra \texttt{PASS}/\texttt{FAIL}; mục Manual (4.1.5) tự bóc tách cấu hình và gán \texttt{REVIEW} kèm bằng chứng và câu hỏi định hướng.
-  \item \textbf{Reporting:} Tự động xuất kết quả ra tệp \texttt{report.json} và \texttt{report.html} trực quan.
+  \item \textbf{Xác minh cụm và chế độ.} Xác định chế độ từ \texttt{autopilot.enabled}, đối chiếu kube context và nạp Rule Registry tương ứng với benchmark.
+  \item \textbf{Thu thập.} Đọc cấu hình cùng phạm vi với quy trình Manual qua Google Cloud API và Kubernetes API.
+  \item \textbf{Chuẩn hóa bằng chứng.} Lưu trường đã lọc cùng nguồn và thời điểm. Ghi lỗi đọc và tài nguyên ngoài phạm vi.
+  \item \textbf{Áp dụng quy tắc.} Đánh giá theo bằng chứng. Chuyển trường hợp thiếu ngữ cảnh hoặc cần xác minh ngoại lệ sang thẩm định.
+  \item \textbf{Xuất báo cáo.} Tổng hợp từ kết quả theo từng đối tượng, kèm lỗi và độ phủ. Hai định dạng dự kiến là JSON và HTML.
 \end{enumerate}
 
-Kết quả kiểm tra được chuẩn hóa theo hệ thống 5 trạng thái:
-\vspace{-2pt}
+Năm trạng thái đánh giá được quy ước như sau.
 \begin{center}
   \small
   \renewcommand{\arraystretch}{1.08}
   \begin{tabularx}{\linewidth}{@{}l >{\raggedright\arraybackslash}X@{}}
-    \textbf{PASS} & Bằng chứng cho thấy điều kiện an ninh của khuyến nghị đã được đáp ứng đầy đủ. \\
-    \textbf{FAIL} & Bằng chứng cho thấy cấu hình vi phạm điều kiện an toàn của khuyến nghị. \\
-    \textbf{REVIEW} & Dữ liệu đã thu thập nhưng cần người đánh giá xác nhận thêm ngữ cảnh hoặc ngoại lệ. \\
-    \textbf{N/A} & Khuyến nghị thực sự không áp dụng cho chế độ hoặc đối tượng đang đánh giá. \\
-    \textbf{ERROR} & Không thể hoàn tất thu thập/đánh giá do lỗi quyền truy cập, kết nối, API hoặc dữ liệu. \\
+    \textbf{PASS} & Bằng chứng đủ và đáp ứng các điều kiện áp dụng. \\
+    \textbf{FAIL} & Có bằng chứng vi phạm một điều kiện cụ thể. \\
+    \textbf{REVIEW} & Cần xác minh ngữ cảnh hoặc ngoại lệ trước khi kết luận. \\
+    \textbf{N/A} & Đã xác nhận khuyến nghị không áp dụng cho chế độ hoặc đối tượng. \\
+    \textbf{ERROR} & Thiếu bằng chứng bắt buộc do lỗi quyền, kết nối, API hoặc dữ liệu. \\
   \end{tabularx}
 \end{center}
-\vspace{-2pt}
 
-\paragraph{Đánh giá phương pháp tự động:} Tốc độ quét toàn diện dưới 30 giây, loại trừ sai sót chủ quan, đảm bảo tính nhất quán 100\% trên mọi môi trường và hỗ trợ đắc lực việc ra quyết định.
+Nhóm sẽ đối chiếu kết luận với biên bản Manual và đo thời gian thực thi sau khi có môi trường GKE.
 
 \clearpage
 \section{Phương pháp tự động từ xa (Remote Automated)}
 \label{sec:remote-method}
 
-Phương pháp tự động từ xa tích hợp công cụ Python vào CI/CD GitHub Actions, cho phép thực thi định kỳ (Scheduled Audit) hoặc theo yêu cầu (\texttt{workflow\_dispatch}) độc lập với máy trạm cá nhân (Hình \ref{fig:remote-workflow}).
+Thiết kế Remote dùng cùng Python CLI trên GitHub Actions, chạy theo yêu cầu qua \texttt{workflow\_dispatch}. Hình \ref{fig:remote-workflow} mô tả luồng dự kiến. Workflow audit GKE là phần cần hoàn thiện bên cạnh CI kiểm tra mã hiện có.
 
 \begin{center}
   \captionsetup{hypcap=false}
   \input{figures/remote-workflow}
-  \captionof{figure}{Quy trình tự động hóa đánh giá an ninh từ xa trên GitHub Actions}
+  \captionof{figure}{Quy trình đánh giá từ xa dự kiến qua GitHub Actions}
   \label{fig:remote-workflow}
 \end{center}
 
-Các cơ chế kỹ thuật và bảo mật then chốt của phương pháp bao gồm:
 \begin{enumerate}[leftmargin=1.0cm,itemsep=1pt,parsep=0pt]
-  \item \textbf{Xác thực không khóa tĩnh (Keyless Authentication via OIDC \& WIF):} Loại bỏ hoàn toàn Service Account Key (file JSON). Runner sử dụng token GitHub OIDC đổi lấy access token tạm thời (STS) từ Google Cloud IAM có thời hạn ngắn (1 giờ).
-  \item \textbf{Phân quyền tối thiểu (Least Privilege):} Chỉ gán quyền Viewer chỉ đọc trên Google Cloud (\texttt{container.viewer}, \texttt{compute.networkViewer}, \texttt{artifactregistry.reader}) và ClusterRole chỉ đọc trên Kubernetes (\texttt{get}, \texttt{list}).
-  \item \textbf{Kết nối mạng an toàn (Private Cluster \& Authorized Networks):} Với cụm Public, runner kết nối qua TLS. Với cụm Private hoặc bật Authorized Networks, đề tài thiết kế phương án dùng Self-Hosted Runner trong VPC của Google Cloud, hoặc tự động kích hoạt script bổ sung tạm thời IP NAT của GitHub Runner vào danh sách cấp phép trong thời gian audit.
-  \item \textbf{Thực thi ma trận song song (Parallel Matrix Execution):} Sử dụng \texttt{strategy: matrix} để phân bổ các runner độc lập kiểm tra đồng thời nhiều cụm GKE trên các vùng địa lý khác nhau trong một lần chạy, tối ưu hóa thời gian thực thi.
-  \item \textbf{Quản lý Artifacts \& Hiển thị kết quả:} Báo cáo JSON và HTML được đóng gói thành GitHub Actions Artifacts để lưu vết kiểm toán, đồng thời bảng tóm tắt tuân thủ được hiển thị trực tiếp tại GitHub Job Summary.
+  \item \textbf{Danh tính runner.} Dùng OIDC và Workload Identity Federation (WIF) để nhận thông tin xác thực ngắn hạn. Ràng buộc quyền theo repository và ref hoặc môi trường được duyệt.
+  \item \textbf{Quyền và đường mạng.} IAM cho phép đọc cấu hình cụm, subnet, trạng thái dịch vụ và kho image liên quan. Kubernetes RBAC giới hạn \texttt{get}/\texttt{list} theo phạm vi. Với endpoint nội bộ hoặc có Authorized Networks, dùng runner có đường mạng đã duyệt và giữ nguyên allowlist trong phiên audit.
+  \item \textbf{Ma trận cụm cần kiểm tra.} Mỗi job xác minh cụm và chạy cùng một phiên bản CLI. Báo cáo và trạng thái được ghi riêng cho từng cụm.
+  \item \textbf{Tổng hợp.} Job tổng hợp đối chiếu báo cáo lưu trên GitHub Actions với danh sách cụm và trạng thái các job, kể cả khi có lỗi hoặc thiếu báo cáo. Báo cáo trình bày kết luận CIS cùng độ phủ đánh giá.
 \end{enumerate}
 
-\paragraph{Đánh giá phương pháp tự động từ xa:} Cung cấp khả năng giám sát an ninh liên tục (Continuous Compliance), biến việc kiểm toán an ninh thành một khâu tự động trong vòng đời DevOps/DevSecOps.
+Mục tiêu của thiết kế Remote là lặp lại quy trình đánh giá trên nhiều cụm với cùng phiên bản công cụ và quy tắc thu thập bằng chứng.

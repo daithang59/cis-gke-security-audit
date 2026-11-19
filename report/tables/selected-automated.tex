@@ -1,25 +1,21 @@
 \begin{center}
-\begin{minipage}{\textwidth}
+\begin{minipage}{\linewidth}
   \centering
   \captionsetup{hypcap=false}
   \captionof{table}{Các khuyến nghị Automated thuộc phạm vi đề tài}
   \label{tab:selected-automated}
   \small
-  \setlength{\tabcolsep}{4pt}
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabularx}{\textwidth}{@{}c l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{2.1cm} >{\centering\arraybackslash}p{2.1cm}@{}}
+  \setstretch{1.1}
+  \begin{tabularx}{\linewidth}{@{}L{2.55cm} >{\raggedright\arraybackslash}X L{2.35cm} L{2.35cm}@{}}
     \toprule
-    \textbf{STT} & \textbf{CIS ID} & \textbf{Name} & \textbf{Description} & \textbf{GKE Standard} & \textbf{GKE Autopilot} \\
+    \tablehead CIS ID (S/A) & \tablehead Khuyến nghị & \tablehead Standard & \tablehead Autopilot \\
     \midrule
-    1 & 4.1.4 & Ensure that default service accounts are not actively used & Đảm bảo các workload ứng dụng không sử dụng ServiceAccount \texttt{default} và tài khoản này không bị gán quyền thừa. & Level 1, Automated & Level 1, Automated \\
-    2 & 4.3.2 & Define default deny NetworkPolicies for each workload namespace & Thiết lập chính sách mạng mặc định từ chối (default deny) cho cả hai chiều Ingress/Egress trên namespace workload. & Level 2, Automated & Không có control \\
-    3 & 5.1.1 & Ensure Artifact Analysis vulnerability scanning is enabled & Kích hoạt dịch vụ quét lỗ hổng Artifact Analysis trên kho ảnh chứa Artifact Registry phục vụ kiểm soát chuỗi cung ứng. & Level 2, Automated & Level 2, Automated \\
-    4 & 5.6.1 / 5.4.1\textsuperscript{*} & Ensure VPC Flow Logs and Intranode Visibility are enabled & Bật tính năng ghi nhật ký lưu lượng VPC Flow Logs trên subnet của cụm và Intranode Visibility trên GKE để phục vụ giám sát. & Level 2, Automated (Mục 5.6.1) & Level 1, Automated (Mục 5.4.1) \\
-    5 & 5.6.3 / 5.4.2\textsuperscript{\dag} & Ensure Master Authorized Networks is enabled & Giới hạn các dải IP được phép truy cập vào Kubernetes Control Plane bằng danh sách mạng tin cậy được ủy quyền. & Level 2, Automated (Mục 5.6.3) & Level 2, Automated (Mục 5.4.2) \\
+    4.1.4 & \emph{Ensure that default service accounts are not actively used}\newline Rà ServiceAccount mặc định, RBAC và tự động gắn token. & L1~\mbox{\sourcepage{cis-gke-standard-v2}{40}} & L1~\mbox{\sourcepage{cis-gke-autopilot-v2}{26}} \\
+    4.3.2 & \emph{Define default deny NetworkPolicies for each workload namespace}\newline Audit kiểm tra enforcement. Đề tài kiểm tra thêm độ phủ default-deny. & L2~\mbox{\sourcepage{cis-gke-standard-v2}{67}} & Không có mục \\
+    5.1.1 & \emph{Enable Artifact Analysis scanning for Artifact Registry container images}\newline Kiểm tra API và trạng thái quét của kho Docker liên quan. & L2~\mbox{\sourcepage{cis-gke-standard-v2}{95}} & L2~\mbox{\sourcepage{cis-gke-autopilot-v2}{70}} \\
+    5.6.1 / 5.4.1 & \emph{Enable VPC Flow Logs and Intranode Visibility}\newline Kiểm tra Flow Logs của subnet và Intranode Visibility của cụm. & L2~\mbox{\sourcepage{cis-gke-standard-v2}{145}} & L1~\mbox{\sourcepage{cis-gke-autopilot-v2}{88}} \\
+    5.6.3 / 5.4.2 & \emph{Restrict GKE control plane access with authorized networks}\newline Đối chiếu thiết lập mạng được phép với nguồn truy cập đã duyệt. & L2~\mbox{\sourcepage{cis-gke-standard-v2}{151}} & L2~\mbox{\sourcepage{cis-gke-autopilot-v2}{91}} \\
     \bottomrule
   \end{tabularx}
-  \vspace{4pt}
-  {\raggedright\footnotesize\textsuperscript{*} Mục 5.6.1 trên Standard tương ứng với mục 5.4.1 trên Autopilot.\\
-  \textsuperscript{\dag} Mục 5.6.3 trên Standard tương ứng với mục 5.4.2 trên Autopilot.\par}
 \end{minipage}
 \end{center}

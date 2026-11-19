@@ -1,0 +1,26 @@
+\par\smallskip\noindent
+\begin{minipage}{\linewidth}
+\captionsetup{hypcap=false}
+\captionof{table}{Phiếu ghi kết quả đánh giá thủ công theo từng cụm}
+\label{tab:ch3-manual}
+\noindent Lập một phiếu cho mỗi cụm và dùng ID tương ứng với chế độ đã xác minh.
+\par\smallskip
+\begin{tabularx}{\linewidth}{@{}L{1.85cm} L{1.85cm} >{\raggedright\arraybackslash}X C{2.3cm} C{2.55cm}@{}}
+\multicolumn{5}{@{}l@{}}{Cụm \textemdash\qquad Chế độ \textemdash}\\
+\toprule
+\tablehead Standard & \tablehead Autopilot & \tablehead Mục kiểm tra & \tablehead Kết quả & \tablehead Đạt/Không đạt \\
+\midrule
+4.1.4 & 4.1.4 & Sử dụng ServiceAccount mặc định & — & — \\
+4.1.5 & 4.1.5 & Gắn token ServiceAccount theo nhu cầu & — & — \\
+4.2.1 & N/A & Thực thi Pod Security Standards & — & — \\
+4.3.1 & 4.3.1 & Cơ chế thực thi NetworkPolicy & — & — \\
+4.3.2 & N/A & Cơ chế thực thi theo CIS và độ phủ default-deny của đề tài, ghi riêng & — & — \\
+4.6.3 & 4.6.3 & Cấu hình bảo mật Pod và container & — & — \\
+5.1.1 & 5.1.1 & Quét image bằng Artifact Analysis & — & — \\
+5.6.1 & 5.4.1 & VPC Flow Logs và Intranode Visibility & — & — \\
+5.6.3 & 5.4.2 & Authorized Networks & — & — \\
+\bottomrule
+\end{tabularx}
+\par\smallskip\noindent\chapterthreeresultnote\par
+\end{minipage}
+\par\smallskip

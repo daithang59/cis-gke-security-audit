@@ -1,0 +1,31 @@
+\par\smallskip\noindent
+\begin{minipage}{\linewidth}
+\captionsetup{hypcap=false}
+\captionof{table}{Phiếu ghi kết quả Local và Remote theo từng cụm}
+\label{tab:ch3-automation}
+\noindent Lập một phiếu cho mỗi cụm, ghi riêng kết quả Local và Remote.
+\par\smallskip
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\linewidth}{@{}L{1.7cm} L{1.8cm} >{\raggedright\arraybackslash}X C{1.28cm} C{2.03cm} C{1.28cm} C{2.03cm}@{}}
+\multicolumn{7}{@{}l@{}}{Cụm \textemdash\qquad Chế độ \textemdash}\\
+\toprule
+ & & & \multicolumn{2}{c}{\tablehead Local} & \multicolumn{2}{c@{}}{\tablehead Remote} \\
+\cmidrule(lr){4-5}\cmidrule(l){6-7}
+\tablehead Standard & \tablehead Autopilot & \tablehead Mục kiểm tra &
+  \tablehead\shortstack[c]{Kết\\quả} & \tablehead\shortstack[c]{Đạt/\\Không đạt} &
+  \tablehead\shortstack[c]{Kết\\quả} & \tablehead\shortstack[c]{Đạt/\\Không đạt} \\
+\midrule
+4.1.4 & 4.1.4 & ServiceAccount mặc định & — & — & — & — \\
+4.1.5 & 4.1.5 & Gắn token ServiceAccount & — & — & — & — \\
+4.2.1 & N/A & Pod Security Standards & — & — & — & — \\
+4.3.1 & 4.3.1 & Thực thi NetworkPolicy & — & — & — & — \\
+4.3.2 & N/A & Thực thi và độ phủ default-deny & — & — & — & — \\
+4.6.3 & 4.6.3 & Bảo mật Pod và container & — & — & — & — \\
+5.1.1 & 5.1.1 & Quét image bằng Artifact Analysis & — & — & — & — \\
+5.6.1 & 5.4.1 & VPC Flow Logs và Intranode Visibility & — & — & — & — \\
+5.6.3 & 5.4.2 & Authorized Networks & — & — & — & — \\
+\bottomrule
+\end{tabularx}
+\par\smallskip\noindent\chapterthreeresultnote\par
+\end{minipage}
+\par\smallskip

@@ -4,53 +4,34 @@
 \section{Tóm tắt đề tài}
 \label{sec:summary}
 
-Google Kubernetes Engine (GKE) là nền tảng quản trị container hàng đầu trên Google Cloud, hỗ trợ hai chế độ vận hành chính: GKE Standard và GKE Autopilot theo mô hình chia sẻ trách nhiệm (Shared Responsibility Model). Mặc dù nhà cung cấp đám mây bảo đảm an toàn cho các thành phần cốt lõi của mặt điều khiển (Control Plane), người dùng vẫn chịu trách nhiệm toàn diện đối với cấu hình workload, phân quyền RBAC, an toàn mạng và danh tính truy cập. Những sai sót cấu hình (misconfigurations) phổ biến như sử dụng ServiceAccount mặc định cho ứng dụng, tự động gắn token truy cập khi không cần thiết, hoặc thiếu chính sách mạng cô lập có thể mở ra các bề mặt tấn công nguy hiểm, dẫn đến rủi ro leo thang đặc quyền và xâm nhập mạng nội bộ \parencites{cis-gke-standard-v2}{cis-gke-autopilot-v2}.
+Google Kubernetes Engine (GKE) cung cấp hai chế độ vận hành, Standard và Autopilot. Theo mô hình chia sẻ trách nhiệm, Google quản lý mặt điều khiển ở cả hai chế độ và quản lý cả các nút chạy workload trong Autopilot. Với Standard, nhóm vận hành quản lý nhóm nút và cấu hình cụm. Ở cả hai chế độ, nhóm vận hành chịu trách nhiệm về workload, quyền truy cập và chính sách mạng thuộc phạm vi của mình~\mbox{\parencite{gke-shared-responsibility}}.
 
-Nhằm thiết lập chuẩn mực bảo mật cho cụm GKE, bộ tiêu chuẩn an ninh CIS GKE Benchmark v2.0.0 cung cấp hệ thống các khuyến nghị chi tiết. Tuy nhiên, việc rà soát thủ công thường tốn nhiều thời gian, dễ sai sót chủ quan và khó duy trì tính nhất quán khi số lượng cụm mở rộng. Đồ án tập trung nghiên cứu và xây dựng giải pháp tự động hóa đánh giá an ninh cho cụm GKE dựa trên 9 khuyến nghị trọng tâm của CIS Benchmark v2.0.0 (gồm 7 khuyến nghị cốt lõi P0 và 2 khuyến nghị mở rộng P1). Điểm đột phá của đề tài là chuyển đổi phương pháp từ thủ công sang tự động hóa (Manual $\rightarrow$ Automation): bên cạnh việc tự động hóa hoàn toàn các tiêu chí nhị phân, hệ thống triển khai cơ chế tự động hóa hỗ trợ (Assisted Automation) cho các khuyến nghị Manual, tự động trích xuất cấu hình hiệu lực và gán trạng thái \texttt{REVIEW} kèm bằng chứng và câu hỏi định hướng giúp chuyên viên thẩm định nhanh chóng. Đề tài đối chiếu ba phương thức: Thủ công trên terminal, Tự động hóa qua Python CLI, và Tự động hóa từ xa qua GitHub Actions với Workload Identity Federation \parencites{project-scope-nine}{project-overview}.
+Khi số cụm và tài nguyên tăng, người đánh giá phải lặp lại nhiều truy vấn và đối chiếu các cấu hình có thể thay đổi giữa các lượt kiểm tra. Tự động hóa được đề xuất để chuẩn hóa cách thu thập bằng chứng và làm rõ những trường hợp cần thẩm định.
+
+Đề tài thiết kế quy trình đánh giá và tăng cường bảo mật cho chín chủ đề thuộc CIS GKE Benchmark v2.0.0. Nhóm dự kiến kiểm tra thủ công trên terminal, chạy tự động bằng Python CLI trên máy trạm và chạy từ xa qua GitHub Actions. Tại thời điểm lập báo cáo, kho mã nguồn có CLI khung và CI kiểm tra mã. Quy trình này chưa được thực nghiệm trên GKE.
 
 \section{Nội dung CIS Benchmark áp dụng}
 \label{sec:cis-overview}
 
-Bộ tiêu chuẩn \emph{CIS GKE Benchmark v2.0.0} được ban hành thành hai phiên bản độc lập tương ứng với GKE Standard và GKE Autopilot nhằm phản ánh mô hình chia sẻ trách nhiệm. Các khuyến nghị trong tài liệu được phân định theo hai trục cơ bản \parencites[tr.~11--14]{cis-gke-standard-v2}[tr.~10--12]{cis-gke-autopilot-v2}:
-\begin{itemize}[leftmargin=1.0cm,itemsep=1pt,parsep=0pt]
-  \item \textbf{Cấp độ bảo vệ (Profile Level):} \emph{Level 1} là các thực tiễn an ninh cơ sở, có tính phổ quát và ít gây gián đoạn vận hành; \emph{Level 2} là chiến lược phòng thủ chuyên sâu (defense-in-depth), thiết lập rào cản nghiêm ngặt hơn nhưng đòi hỏi đánh giá kỹ về tính tương thích.
-  \item \textbf{Phương thức đánh giá (Assessment Status):} \emph{Automated} là các khuyến nghị có tiêu chí tường minh, kiểm tra tự động qua API; \emph{Manual} là các khuyến nghị đòi hỏi xác minh ngữ cảnh nghiệp vụ hoặc sự phê duyệt của chuyên gia bảo mật.
-\end{itemize}
-Nhóm thống nhất lựa chọn \textbf{9 chủ đề CIS Benchmark} (7 P0 cốt lõi + 2 P1 mở rộng) \parencite{project-scope-nine}, bao quát từ định danh, mạng, Pod đến hạ tầng đám mây, được phân loại chi tiết theo hai nhóm dưới đây.
+CIS công bố benchmark riêng cho GKE Standard và Autopilot. Trong các cấp bảo vệ (\emph{Profile Level}), Level 1 (L1) gồm những thiết lập bảo mật thực tiễn, hạn chế ảnh hưởng đến việc vận hành. Level 2 (L2) mở rộng Level 1 để tăng cường bảo vệ~\mbox{\parencites[tr.~13]{cis-gke-standard-v2}[tr.~13]{cis-gke-autopilot-v2}}.
+
+\emph{Assessment Status} phân biệt khuyến nghị có thể kiểm tra tự động với khuyến nghị cần người đánh giá. Cấp bảo vệ và trạng thái đánh giá do CIS quy định cho từng chế độ~\mbox{\parencites[tr.~11--13]{cis-gke-standard-v2}[tr.~10--13]{cis-gke-autopilot-v2}}. Đề tài dùng hệ ưu tiên riêng với bảy chủ đề cốt lõi (P0) và hai chủ đề mở rộng (P1).
 
 \subsection{Các khuyến nghị Manual}
 \label{subsec:selected-manual}
 
-Các khuyến nghị mang nhãn \emph{Manual} trong CIS Benchmark là những tiêu chí mà tính an toàn gắn liền với ngữ cảnh ứng dụng, không thể chỉ dựa vào câu lệnh kiểm tra nhị phân đơn giản. Phạm vi đề tài bao gồm 4 khuyến nghị Manual tiêu biểu:
-\begin{itemize}[leftmargin=1.0cm,itemsep=1pt,parsep=0pt]
-  \item \textbf{Khuyến nghị 4.1.5 (Level 1 Manual trên cả Standard và Autopilot):} Đảm bảo ServiceAccount token chỉ được gắn (automount) vào Pod khi Pod thực sự cần gọi Kubernetes API. Việc tắt automount cho các workload thông thường giúp triệt tiêu rủi ro lộ token khi container bị tấn công; ngược lại, các công cụ hệ thống (như Ingress, DaemonSet giám sát) vẫn được phép mount token theo nhu cầu.
-  \item \textbf{Khuyến nghị 4.2.1 (Level 1 Manual trên Standard):} Thực thi Pod Security Standards (PSS) ở mức \texttt{baseline} hoặc \texttt{restricted} trên các namespace ứng dụng qua admission control. (Chế độ Autopilot tự động áp dụng các ràng buộc an toàn tương đương nên không có mục này).
-  \item \textbf{Khuyến nghị 4.3.1 (Level 1 Manual trên Standard, Level 2 Manual trên Autopilot):} Kích hoạt cơ chế thực thi chính sách mạng NetworkPolicy (bằng Dataplane V2 hoặc Calico trên Standard; tích hợp sẵn Dataplane V2 trên Autopilot).
-  \item \textbf{Khuyến nghị 4.6.3 (Level 2 Manual trên cả hai chế độ):} Thiết lập ngữ cảnh an toàn nghiêm ngặt (\texttt{securityContext}) cho Pod và container (\texttt{runAsNonRoot}, cấm leo thang đặc quyền, giới hạn capabilities, cấu hình seccomp profile phù hợp).
-\end{itemize}
+Bảng \ref{tab:selected-manual} trình bày bốn chủ đề Manual, trong đó mục 4.2.1 chỉ có trên Standard. Người đánh giá xác nhận ngữ cảnh, phạm vi và các ngoại lệ liên quan. Ví dụ, với mục 4.1.5, tắt automount giúp giảm nguy cơ lộ token được gắn tự động. Việc kết luận vẫn cần đối chiếu các mount khai báo riêng và nhu cầu gọi Kubernetes API của workload.
 
-\paragraph{Chuyển đổi phương pháp từ Manual sang Automation:}
-Thay vì bắt người đánh giá phải mở từng Pod, đọc hàng trăm dòng YAML và tự điều tra thủ công, đề tài xây dựng cơ chế \textbf{"Tự động hóa hỗ trợ" (Assisted Automation)}: Kịch bản tự động thu thập Pod spec, tự động giải mã thứ tự ưu tiên cấu hình hiệu lực, phát hiện các projected token volume gắn thủ công, và đối chiếu với danh mục nghiệp vụ đã khai báo. Với các trường hợp chưa rõ nhu cầu, hệ thống gán trạng thái \texttt{REVIEW}, trích xuất sẵn bằng chứng và câu hỏi định hướng, giúp chuyên viên bảo mật ra phán quyết chỉ trong vài giây.
-
-Bảng \ref{tab:selected-manual} tổng hợp chi tiết các khuyến nghị Manual thuộc phạm vi đề tài.
+\paragraph{Tự động hóa hỗ trợ.}
+Công cụ dự kiến chuẩn hóa cấu hình thu thập được và ghi \texttt{REVIEW} kèm bằng chứng cho trường hợp cần thẩm định. Kết luận sau thẩm định được lưu cùng căn cứ của người đánh giá.
 
 \input{tables/selected-manual}
 
 \subsection{Các khuyến nghị Automated}
 \label{subsec:selected-automated}
 
-Các khuyến nghị mang nhãn \emph{Automated} trong CIS Benchmark là những tiêu chí kỹ thuật có trạng thái cấu hình nhị phân tường minh, cho phép kịch bản kiểm tra đối chiếu trực tiếp dữ liệu từ API để đưa ra kết luận \texttt{PASS} hoặc \texttt{FAIL}. Phạm vi đề tài bao gồm 5 khuyến nghị Automated:
-\begin{itemize}[leftmargin=1.0cm,itemsep=1pt,parsep=0pt]
-  \item \textbf{Khuyến nghị 4.1.4 (Level 1 Automated trên cả Standard và Autopilot):} Đảm bảo workload ứng dụng không sử dụng chủ động ServiceAccount mặc định (\texttt{default}) và tài khoản này không bị gán quyền RBAC thừa, tránh nguy cơ dùng chung danh tính và lan truyền đặc quyền.
-  \item \textbf{Khuyến nghị 4.3.2 (Level 2 Automated trên Standard):} Thiết lập chính sách mạng mặc định từ chối (default-deny NetworkPolicy) cho cả hai chiều Ingress/Egress trên namespace ứng dụng nhằm thiết lập mô hình Zero Trust, ngăn chặn kẻ tấn công di chuyển ngang giữa các Pod. (Không áp dụng trên Autopilot).
-  \item \textbf{Khuyến nghị 5.1.1 (Level 2 Automated trên cả hai chế độ):} Kích hoạt dịch vụ quét lỗ hổng Artifact Analysis cho các container image trong Artifact Registry, bảo vệ chuỗi cung ứng phần mềm.
-  \item \textbf{Khuyến nghị 5.6.1 S / 5.4.1 A (Level 2 S / Level 1 A, Automated):} Bật ghi nhật ký dòng mạng (VPC Flow Logs) trên subnet của cụm kết hợp Intranode Visibility trên GKE để giám sát lưu lượng giao tiếp giữa các Pod phục vụ điều tra sự cố an ninh.
-  \item \textbf{Khuyến nghị 5.6.3 S / 5.4.2 A (Level 2 Automated trên cả hai):} Giới hạn dải IP được phép truy cập vào Kubernetes Control Plane bằng Master Authorized Networks, ngăn chặn kết nối quản trị trái phép từ Internet.
-\end{itemize}
+Bảng \ref{tab:selected-automated} trình bày năm chủ đề Automated. Công cụ dự kiến đối chiếu cấu hình với điều kiện của từng khuyến nghị. Kết luận phụ thuộc vào chất lượng bằng chứng và độ phủ đánh giá.
 
-\paragraph{Cơ chế đánh giá tự động hóa:}
-Với các khuyến nghị này, bộ công cụ tự động truy vấn trực tiếp thuộc tính cấu hình từ Google Cloud API và Kubernetes API, đối chiếu với bộ quy tắc logic chuẩn hóa và lập tức gán trạng thái \texttt{PASS} khi cấu hình thỏa mãn điều kiện, hoặc \texttt{FAIL} khi phát hiện vi phạm kèm đường dẫn tài nguyên cụ thể.
-
-Bảng \ref{tab:selected-automated} tổng hợp danh mục các khuyến nghị Automated thuộc phạm vi đề tài.
+Ở mục 4.3.2, Audit Procedure kiểm tra cơ chế thực thi NetworkPolicy. Đề tài kiểm tra thêm độ phủ default-deny ở hai chiều trên namespace workload Standard và ghi kết quả này riêng~\mbox{\sourcepage{cis-gke-standard-v2}{67--69}}.
 
 \input{tables/selected-automated}

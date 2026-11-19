@@ -5,11 +5,11 @@
   box/.style={draw=reportblue,rounded corners=4pt,fill=reportlight,text width=2.8cm,minimum height=13mm},
   arrow/.style={-{Latex[length=1.8mm]},thick,draw=reportblue}
 ]
-  \node[box] (trigger) {1. Kích hoạt CI/CD\\(Lịch Cron /\\Workflow Dispatch)};
+  \node[box] (trigger) {1. Chọn mục tiêu\\và kích hoạt\\workflow audit};
   \node[box,right=of trigger] (auth) {2. Xác thực WIF/OIDC\\(Keyless, đổi lấy\\STS token tạm)};
   \node[box,right=of auth] (api) {3. Kết nối API\\Quyền chỉ đọc\\(GCP \& K8s)};
   \node[box,right=of api] (engine) {4. Chạy kịch bản\\Python CIS Engine\\(Matrix nhiều cụm)};
-  \node[box,right=of engine] (output) {5. Lưu Artifacts\\\& Hiển thị tóm tắt\\(Job Summary)};
+  \node[box,right=of engine] (output) {5. Tổng hợp\\artifacts và lỗi\\vào Job Summary};
 
   \draw[arrow] (trigger) -- (auth);
   \draw[arrow] (auth) -- (api);

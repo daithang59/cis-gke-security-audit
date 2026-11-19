@@ -1,0 +1,22 @@
+\begin{longtable}{@{}L{2.35cm} L{4.9cm} L{7.2cm}@{}}
+\caption{Nguồn dữ liệu và vai trò của công cụ theo khuyến nghị}\label{tab:ch3-rule-map}\\
+\toprule
+\tablehead CIS ID (S/A) & \tablehead Dữ liệu cần đọc & \tablehead Cách xử lý dự kiến \\
+\midrule
+\endfirsthead
+\toprule
+\tablehead CIS ID (S/A) & \tablehead Dữ liệu cần đọc & \tablehead Cách xử lý dự kiến \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+4.1.4 / 4.1.4 & Pod, mẫu workload, ServiceAccount và RBAC. & Đối chiếu danh tính, quyền và automount. Chuyển thẩm định khi cần xác nhận nhu cầu API hoặc ngoại lệ. \\
+4.1.5 / 4.1.5 & Pod, ServiceAccount và thông tin gắn volume. & Tính automount hiệu lực và chuyển thẩm định nhu cầu API, quyền và các mount liên quan. \\
+4.2.1 / N/A & Nhãn enforce của namespace và danh sách workload. & Chỉ nạp trên Standard. Cung cấp nhãn và phạm vi để người đánh giá xác nhận. \\
+4.3.1 / 4.3.1 & Datapath và cấu hình NetworkPolicy của cụm. & Trích cấu hình theo từng mode để người đánh giá xác nhận cơ chế thực thi. \\
+4.3.2 / N/A & Cấu hình cụm và NetworkPolicy theo namespace. & Chỉ nạp trên Standard. Ghi riêng kết quả Audit về thực thi và kết quả kiểm tra mở rộng về default-deny. \\
+4.6.3 / 4.6.3 & Cấu hình bảo mật ở mẫu workload, Pod và từng container. & Xác định cấu hình hiệu lực theo mode, rồi chuyển thẩm định ngoại lệ và đặc quyền cần thiết. \\
+5.1.1 / 5.1.1 & Service Usage và cấu hình quét của kho Docker liên quan. & Kiểm tra đồng thời API cấp project và trạng thái quét của từng kho. \\
+5.6.1 / 5.4.1 & Cấu hình cụm GKE và cấu hình subnet. & Đối chiếu hai trường bắt buộc. Xác minh thêm nếu Flow Logs dùng nguồn ngoài Compute API. \\
+5.6.3 / 5.4.2 & Loại endpoint, cấu hình mạng được phép và danh sách CIDR đã duyệt. & Đánh giá điều kiện IP endpoint. Chuyển xác minh với DNS-only hoặc ngoại lệ chưa rõ. \\
+\end{longtable}

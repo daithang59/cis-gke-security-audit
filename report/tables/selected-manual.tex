@@ -1,23 +1,20 @@
 \begin{center}
-\begin{minipage}{\textwidth}
+\begin{minipage}{\linewidth}
   \centering
   \captionsetup{hypcap=false}
   \captionof{table}{Các khuyến nghị Manual thuộc phạm vi đề tài}
   \label{tab:selected-manual}
   \small
-  \setlength{\tabcolsep}{4pt}
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabularx}{\textwidth}{@{}c l >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\centering\arraybackslash}p{2.1cm} >{\centering\arraybackslash}p{2.1cm}@{}}
+  \setstretch{1.1}
+  \begin{tabularx}{\linewidth}{@{}L{2.55cm} >{\raggedright\arraybackslash}X L{2.35cm} L{2.35cm}@{}}
     \toprule
-    \textbf{STT} & \textbf{CIS ID} & \textbf{Name} & \textbf{Description} & \textbf{GKE Standard} & \textbf{GKE Autopilot} \\
+    \tablehead CIS ID (S/A) & \tablehead Khuyến nghị & \tablehead Standard & \tablehead Autopilot \\
     \midrule
-    1 & 4.1.5 & Ensure service account tokens are mounted only when Pods require Kubernetes API access & Thu hẹp bề mặt tấn công bằng cách chỉ tự động gắn (automount) token cho các Pod thực sự cần gọi Kubernetes API. & Level 1, Manual & Level 1, Manual \\
-    2 & 4.2.1 & Enforce baseline or restricted Pod Security Standards on workload namespaces & Thực thi tiêu chuẩn bảo mật Pod (PSS) ở chế độ enforce với mức baseline hoặc restricted trên các namespace ứng dụng. & Level 1, Manual & Không có control \\
-    3 & 4.3.1\textsuperscript{*} & NetworkPolicy enforcement & Kích hoạt cơ chế thực thi chính sách mạng (Dataplane V2 hoặc Calico) để làm nền tảng kiểm soát lưu lượng Pod. & Level 1, Manual & Level 2, Manual \\
-    4 & 4.6.3 & Ensure securityContext is applied to pods and containers & Thiết lập các trường ngữ cảnh an toàn (runAsNonRoot, cấm privileged, cấm escalate, seccomp) cho Pod và container. & Level 2, Manual & Level 2, Manual \\
+    4.1.5 & \emph{Ensure service account tokens are mounted only when Pods require Kubernetes API access}\newline Chỉ gắn token khi Pod cần gọi Kubernetes API. & L1~\mbox{\sourcepage{cis-gke-standard-v2}{43}} & L1~\mbox{\sourcepage{cis-gke-autopilot-v2}{29}} \\
+    4.2.1 & \emph{Enforce baseline or restricted Pod Security Standards on workload namespaces}\newline Thực thi PSS ở mức baseline hoặc restricted cho namespace workload. & L1~\mbox{\sourcepage{cis-gke-standard-v2}{60}} & Không có mục \\
+    4.3.1 & \emph{Standard: Enable NetworkPolicy enforcement with GKE Dataplane V2 or Calico.\newline Autopilot: Use NetworkPolicy with built in GKE Dataplane V2 enforcement}\newline Xác minh cơ chế thực thi NetworkPolicy theo chế độ. & L1~\mbox{\sourcepage{cis-gke-standard-v2}{64}} & L2~\mbox{\sourcepage{cis-gke-autopilot-v2}{46}} \\
+    4.6.3 & \emph{Require hardened security contexts for all workload Pods and containers}\newline Kiểm tra cấu hình bảo mật của Pod và container. & L2~\mbox{\sourcepage{cis-gke-standard-v2}{89}} & L2~\mbox{\sourcepage{cis-gke-autopilot-v2}{63}} \\
     \bottomrule
   \end{tabularx}
-  \vspace{4pt}
-  {\raggedright\footnotesize\textsuperscript{*} Tên chính thức theo CIS Benchmark v2.0.0: \textbf{Standard} --- \textit{Enable NetworkPolicy enforcement with GKE Dataplane V2 or Calico}; \textbf{Autopilot} --- \textit{Use NetworkPolicy with built in GKE Dataplane V2 enforcement}.\par}
 \end{minipage}
 \end{center}

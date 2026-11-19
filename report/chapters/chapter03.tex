@@ -1,57 +1,471 @@
-% ==========================================================================
-% Chương 3 — Thiết kế và kiến trúc hệ thống
-% Chương này chứa các vị trí placeholder cho sơ đồ kiến trúc.
-% Khi có sơ đồ draw.io export PDF, chỉ cần đặt file vào report/figures/
-% và hình sẽ tự động hiển thị thay cho placeholder.
-% ==========================================================================
-\chapter{Thiết kế và kiến trúc hệ thống}
+\chapter{Triển khai hệ thống}
 \label{chap:architecture}
 
-% TODO: Viết nội dung giới thiệu kiến trúc tổng thể của hệ thống.
+\begingroup
+\clubpenalty=10000
+\widowpenalty=10000
 
-\section{Kiến trúc hệ thống tổng thể}
+Chương này trình bày mô hình triển khai, quy trình kiểm tra thủ công và thiết kế công cụ đánh giá cấu hình GKE theo CIS Benchmark v2.0.0. Tại thời điểm lập báo cáo, nhóm chưa khởi tạo được môi trường Google Cloud do hạn chế kinh phí. Các sơ đồ, câu lệnh và tiêu chí dưới đây mô tả phương án triển khai dự kiến. Kết quả trên GKE sẽ được bổ sung sau khi có hạ tầng thực nghiệm.
+
+\newcommand{\chapterthreefigure}[4][0.5\textheight]{%
+  \par\smallskip\noindent
+  \begin{minipage}{\linewidth}
+    \centering
+    \captionsetup{hypcap=false}
+    \includegraphics[width=\linewidth,height=#1,keepaspectratio]{#2}
+    \captionof{figure}{#3}
+    \label{#4}
+  \end{minipage}
+  \par\smallskip
+}
+\newfontfamily\chapterthreecodefont{Latin Modern Mono}[Scale=0.86,Ligatures=TeXOff]
+\makeatletter
+\newcommand{\chapterthreecodesettings}{%
+  \small\setstretch{1.1}\let\verbatim@font\chapterthreecodefont
+}
+\makeatother
+\newcommand{\chapterthreecheck}[1]{%
+  \par\medskip\noindent\textbf{#1}\par\nopagebreak[4]\noindent
+}
+\newcommand{\chapterthreecheckpart}[1]{%
+  \par\smallskip\noindent\textbf{#1}\par\nopagebreak[4]\noindent
+}
+\newcommand{\chapterthreeresultnote}{%
+  \textit{Cách ghi.} \texttt{PASS} là đủ bằng chứng đạt, \texttt{FAIL} là đã xác nhận vi phạm.
+  Chỉ hai trạng thái này có kết luận Đạt hoặc Không đạt. \texttt{REVIEW} là cần thẩm định,
+  \texttt{ERROR} là lỗi làm thiếu bằng chứng, \texttt{N/A} là đã xác nhận không áp dụng.
+  Dấu gạch (---) biểu thị chưa thực nghiệm trên GKE.
+  Với 4.3.2, ghi riêng kết quả Audit CIS và kiểm tra default-deny mở rộng.%
+}
+
+\section{Mô hình triển khai}
 \label{sec:system-architecture}
 
-% TODO: Mô tả các thành phần chính: Terraform, Python CIS Audit Engine,
-% GitHub Actions, GKE cluster, và mối quan hệ giữa chúng.
+\subsection{Mô hình kiến trúc tổng thể}
 
-\begin{figure}[htbp]
-  \centering
-  \placeholderfig{system-architecture}{13cm}{7cm}{%
-    Sơ đồ kiến trúc hệ thống tổng thể\\[4pt]
-    Terraform -- GKE Cluster -- Python Audit Engine -- GitHub Actions}
-  \caption{Kiến trúc tổng thể của hệ thống đánh giá và tăng cường bảo mật GKE}
-  \label{fig:system-architecture}
-\end{figure}
+Hình \ref{fig:ch3-system} phân biệt luồng đánh giá chỉ đọc và luồng thay đổi có phê duyệt. Kết quả đánh giá được lưu riêng để nhóm xem xét trước khi quyết định khắc phục.
 
-\section{Luồng hoạt động end-to-end}
-\label{sec:system-workflow}
+\chapterthreefigure[0.45\textheight]{ch3-system-architecture.pdf}{Kiến trúc tổng thể hệ thống đánh giá bảo mật GKE dự kiến}{fig:ch3-system}
 
-% TODO: Mô tả luồng từ khởi tạo hạ tầng, thu thập dữ liệu, đánh giá,
-% đến báo cáo và remediation.
+Các Hình \ref{fig:manual-workflow}--\ref{fig:remote-workflow} ở Chương 2 mô tả trình tự của từng phương pháp. Manual dùng \texttt{gcloud} và \texttt{kubectl}. Local và Remote dùng chung Python Audit Engine. Cả ba đọc cấu hình hạ tầng qua Google Cloud API và đối tượng Kubernetes qua endpoint riêng của cụm cần kiểm tra~\mbox{\parencite{project-overview}}.
 
-\begin{figure}[htbp]
-  \centering
-  \placeholderfig{system-workflow}{13cm}{7cm}{%
-    Luồng hoạt động end-to-end của hệ thống\\[4pt]
-    Provisioning → Audit → Report → Approval\\[2pt]
-    Được duyệt → Remediation → Re-audit\\[2pt]
-    Không được duyệt → Chỉ xuất báo cáo}
-  \caption{Luồng hoạt động end-to-end từ khởi tạo đến đánh giá lại}
-  \label{fig:system-workflow}
-\end{figure}
+GitHub Actions CI hiện kiểm tra mã Python và có bước kiểm tra Terraform khi có tệp cấu hình. Quy trình đánh giá dự kiến chạy từ máy trạm hoặc runner bên ngoài cụm với quyền đọc. Áp dụng kế hoạch Terraform và khắc phục cấu hình cần phê duyệt riêng. Sau thay đổi, nhóm kiểm tra lại chức năng và đối chiếu bằng chứng trước và sau.
 
-\section{Kiến trúc Python CIS Audit Engine}
-\label{sec:audit-engine-architecture}
+\subsection{Các thành phần trong mô hình}
 
-% TODO: Mô tả chi tiết các thành phần bên trong Audit Engine:
-% Collector, Normalizer, Rule Registry, Evaluator, Reporter.
+Bảng \ref{tab:ch3-components} mô tả vai trò của các thành phần. Mỗi cụm cần đường truy cập và quyền đọc phù hợp với phạm vi đánh giá.
 
-\begin{figure}[htbp]
-  \centering
-  \placeholderfig{audit-engine-architecture}{13cm}{7cm}{%
-    Kiến trúc chi tiết Python CIS Audit Engine\\[4pt]
-    Collector → Normalizer → Rule Registry → Evaluator → Reporter}
-  \caption{Kiến trúc chi tiết của Python CIS Audit Engine}
-  \label{fig:audit-engine-architecture}
-\end{figure}
+{\small\setstretch{1.1}
+\begin{longtable}{@{}L{3.9cm} L{10.7cm}@{}}
+\caption{Thành phần và vai trò trong mô hình triển khai}\label{tab:ch3-components}\\
+\toprule
+\tablehead Thành phần & \tablehead Vai trò và giao tiếp \\
+\midrule
+\endfirsthead
+\toprule
+\tablehead Thành phần & \tablehead Vai trò và giao tiếp \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Máy trạm quản trị & Thực hiện Manual hoặc chạy Python CLI theo phương thức Local. \\
+GitHub repository và Actions & Quản lý phiên bản, kiểm tra mã và xét duyệt thay đổi. Workflow Remote dự kiến chạy và lưu báo cáo riêng theo từng cụm. \\
+Terraform và Cloud Storage & Terraform quản lý hạ tầng qua Google Cloud API. Backend GCS giới hạn quyền truy cập và tách state theo lớp dùng chung, Standard và Autopilot. \\
+VPC, subnet và hai cụm GKE & Subnet cung cấp đường mạng cho node và Pod. GKE quản lý control plane của cả hai cụm và cả hạ tầng node của Autopilot. \\
+Artifact Registry và Artifact Analysis & Lưu image Docker của workload lab và cung cấp chức năng quét lỗ hổng. Dịch vụ và từng kho liên quan được kiểm tra riêng. \\
+Google Cloud API và Kubernetes API & Google Cloud API cung cấp cấu hình hạ tầng. Kubernetes API của từng cụm cung cấp cấu hình workload, RBAC và NetworkPolicy. \\
+IAM và Kubernetes RBAC & IAM giới hạn quyền đọc tài nguyên Google Cloud. RBAC cấp \texttt{get} và \texttt{list} cho đối tượng Kubernetes trong phạm vi. \\
+Python CLI và đầu ra & Thu thập và chuẩn hóa bằng chứng, áp dụng quy tắc và xuất báo cáo JSON, HTML. \\
+\end{longtable}
+}
+
+\subsection{Thiết kế môi trường triển khai}
+
+Hình \ref{fig:ch3-infra} đặt control plane do Google quản lý và các dịch vụ cấp project ngoài các subnet của khách hàng. Hai subnet thuộc cùng VPC dự kiến. Mỗi subnet dành cho node và Pod của một cụm. Bảng \ref{tab:ch3-env} ghi các thông số đề xuất và những giá trị cần xác nhận sau provisioning. Hiện chưa có giá trị quan sát trên GKE.
+
+\chapterthreefigure{ch3-gcp-infrastructure.pdf}{Mô hình hạ tầng Google Cloud dự kiến}{fig:ch3-infra}
+
+{\small\setstretch{1.1}
+\begin{longtable}{@{}L{2.75cm} L{7.15cm} L{4.55cm}@{}}
+\caption{Thông số môi trường dự kiến}\label{tab:ch3-env}\\
+\toprule
+\tablehead Hạng mục & \tablehead Cấu hình đề xuất & \tablehead Cần ghi khi nghiệm thu \\
+\midrule
+\endfirsthead
+\toprule
+\tablehead Hạng mục & \tablehead Cấu hình đề xuất & \tablehead Cần ghi khi nghiệm thu \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Project và vị trí & Project lab riêng (\texttt{PROJECT\_ID}). Region đề xuất \texttt{asia-southeast1} cho hai cụm, hai subnet và kho Docker. & ID project, location từng cụm và quota đã duyệt. \\
+Cụm GKE & \texttt{gke-cis-standard} và \texttt{gke-cis-autopilot}, dùng VPC-native và kênh Regular. Standard dự kiến dùng Dataplane V2. & Mode, phiên bản control plane/node và datapath thực tế. \\
+VPC và subnet & \texttt{vpc-cis-lab}. Standard dùng dải node \texttt{10.41.0.0/24} và Pod \texttt{10.42.0.0/18}. Autopilot dùng dải node \texttt{10.41.1.0/24} và Pod \texttt{10.42.64.0/18}. & Định danh subnet, CIDR hiệu lực và dải Service do GKE quản lý theo phiên bản. \\
+Kho image & Kho Docker \texttt{cis-lab-images} và image theo digest. Kiểm tra Artifact Analysis tại project chứa image. & URI kho, digest và trạng thái API/quét của kho. \\
+GCS remote state & Bucket riêng tư \texttt{STATE\_BUCKET} với IAM giới hạn. Mỗi root module \texttt{shared}, \texttt{standard} và \texttt{autopilot} dùng prefix riêng. & Tên bucket, quyền backend và state prefix đã tạo. \\
+Workload lab & Namespace \texttt{sa-lab} cho ServiceAccount trên hai mode. \texttt{psa-lab} và \texttt{netpol-lab} trên Standard. Lab mạng dùng hai client và một Service HTTP nội bộ. & Namespace, manifest, tài nguyên thực tế và kịch bản tương ứng. \\
+Endpoint và quyền & Endpoint IP nội bộ và Authorized Networks theo nguồn được duyệt. Danh tính provisioning tách khỏi danh tính audit. & Endpoint, CIDR đã duyệt, IAM/RBAC và đường mạng thực tế. \\
+\end{longtable}
+}
+
+Các thông số trong bảng là thiết kế lab chưa triển khai. Khi lập kế hoạch, nhóm sẽ đối chiếu các CIDR với không gian địa chỉ hiện có và nhu cầu của node và Pod. Phiên bản GKE và dải địa chỉ Service sẽ được xác nhận trước khi tạo cụm~\mbox{\parencite{gke-vpc-native}}.
+
+Khi có project và billing, nhóm dự kiến xác nhận quota, bật các API cần thiết và cấp IAM cho từng vai trò. Người triển khai thiết lập backend riêng, sau đó lập và trình duyệt kế hoạch Terraform cho phần dùng chung và hai cụm. Sau khi tạo cụm theo kế hoạch đã duyệt, nhóm xác nhận chế độ, endpoint và RBAC trước khi triển khai workload lab.
+
+\section{Triển khai thủ công (Manual)}
+\label{sec:ch3-manual}
+
+\subsection{Chuẩn bị môi trường kiểm tra}
+\label{subsec:ch3-manual-prep}
+
+Phương pháp thủ công có thể đánh giá cả khuyến nghị Manual và Automated của CIS. Người đánh giá cần Google Cloud CLI, plugin \texttt{gke-gcloud-auth-plugin}, \texttt{kubectl} và danh tính có quyền đọc. Trước khi truy vấn, đối chiếu project, vị trí, tên cụm, chế độ và phiên bản với phiếu kiểm tra.
+
+Các lệnh minh họa dùng cú pháp Bash. Từ cấu hình cụm, xác định chế độ qua \texttt{autopilot.enabled} và lấy project, region từ định danh subnet. Với mỗi image trong phạm vi, dùng project và vị trí của kho tương ứng. Lệnh nạp cấu hình kết nối chỉ cập nhật kubeconfig cục bộ. Lab dự kiến dùng endpoint nội bộ qua \texttt{-{}-internal-ip}. Khi đánh giá cụm qua endpoint DNS, dùng \texttt{-{}-dns-endpoint}.
+
+{\chapterthreecodesettings
+\begin{verbatim}
+gcloud container clusters describe "$CLUSTER_NAME" \
+  --project="$PROJECT_ID" --location="$LOCATION" --format=json
+gcloud container clusters get-credentials "$CLUSTER_NAME" \
+  --project="$PROJECT_ID" --location="$LOCATION" --internal-ip
+gcloud compute networks subnets describe "$SUBNET_NAME" \
+  --project="$NETWORK_PROJECT" --region="$REGION" \
+  --format='value(enableFlowLogs)'
+\end{verbatim}
+}
+
+\noindent\begin{minipage}{\linewidth}
+{\chapterthreecodesettings
+\begin{verbatim}
+gcloud services list --enabled --project="$IMAGE_PROJECT" \
+  --format='value(config.name)'
+gcloud artifacts repositories describe "$REPO" \
+  --project="$IMAGE_PROJECT" --location="$REPO_LOCATION" \
+  --format='json(name,format,mode,vulnerabilityScanningConfig)'
+\end{verbatim}
+}
+\end{minipage}
+
+Sau khi nạp thông tin kết nối, đối chiếu context và địa chỉ server với endpoint dự kiến. Kiểm tra quyền \texttt{get}/\texttt{list} theo từng loại tài nguyên và namespace. Các lệnh sau minh họa phạm vi toàn cụm. Nếu quyền chỉ cấp theo namespace, thay \texttt{-A} bằng \texttt{-n "\$NS"} và ghi rõ phạm vi. Các truy vấn đối tượng cấp cụm vẫn cần quyền riêng.
+
+{\chapterthreecodesettings
+\begin{verbatim}
+CTX=$(kubectl config current-context)
+kubectl --context "$CTX" config view --minify \
+  -o jsonpath='{.clusters[0].cluster.server}{"\n"}'
+kubectl --context "$CTX" auth can-i list pods -n "$NS"
+kubectl --context "$CTX" get namespaces,clusterroles,\
+clusterrolebindings -o json
+kubectl --context "$CTX" get pods,serviceaccounts,\
+roles,rolebindings,networkpolicies -A -o json
+kubectl --context "$CTX" get deployments,statefulsets,\
+daemonsets,replicasets,jobs,cronjobs -A -o json
+\end{verbatim}
+}
+
+Dùng Pod đang chạy để kiểm tra trạng thái sau admission và template để rà cấu hình của lần tạo kế tiếp. Lọc JSON trước khi lưu hoặc chia sẻ minh chứng. Chỉ giữ trường cần thiết, định danh đối tượng, thời gian và lỗi đã lọc. Không đưa token, dữ liệu Secret, biến môi trường thô hay kubeconfig vào hồ sơ. Phép thử admission và luồng mạng được thực hiện riêng trong lab bằng quyền phù hợp.
+
+Nếu truy vấn lỗi hoặc danh tính không đủ quyền đọc, ghi phần chưa đánh giá được. Kết luận đạt hoặc không đạt cần dựa vào dữ liệu đọc được và tiêu chí của từng khuyến nghị.
+
+\subsection{Kiểm tra ServiceAccount}
+
+\chapterthreecheck{4.1.4 -- Workload không sử dụng ServiceAccount mặc định}
+Tách danh tính theo workload giúp tránh thừa hưởng quyền ngoài ý muốn. Kubernetes tạo ServiceAccount \texttt{default} trong mỗi namespace. Phép kiểm xem ứng dụng có dùng tài khoản này và tài khoản được cấp quyền gì.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Từ Pod và mẫu workload thu ở Mục \ref{subsec:ch3-manual-prep}, đọc \texttt{serviceAccountName}. Đối chiếu trường bị bỏ trống trong mẫu với tài khoản thực tế của Pod. Rà ServiceAccount mặc định từng namespace và tìm RoleBinding hoặc ClusterRoleBinding trỏ tới tài khoản này. Dùng \texttt{roleRef} để tra quyền được cấp.
+
+\chapterthreecheckpart{Điều kiện đánh giá}
+Đạt khi ứng dụng dùng ServiceAccount riêng và tài khoản mặc định không được gán quyền tường minh ngoài ngoại lệ đã duyệt. Pod không cần Kubernetes API phải đặt \texttt{automountServiceAccountToken=false} trực tiếp trong Pod spec. Kiểm tra cấu hình tự gắn token của tài khoản mặc định nếu có nguy cơ gắn ngoài ý muốn. Ghi không đạt khi xác nhận vi phạm một trong các điều kiện trên. Nếu chưa rõ nhu cầu API hoặc ngoại lệ, yêu cầu xác minh thêm~\mbox{\parencites[tr.~40--41]{cis-gke-standard-v2}[tr.~26--27]{cis-gke-autopilot-v2}}.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Tên namespace, workload và ServiceAccount, giá trị automount, binding và quyền tương ứng. Ghi căn cứ của ngoại lệ nếu có.
+
+\chapterthreecheck{4.1.5 -- Chỉ gắn token cho Pod cần gọi Kubernetes API}
+Token gắn vào container có thể bị sử dụng nếu workload gặp sự cố. Vì vậy, cần xác nhận nhu cầu truy cập API của từng workload.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Đọc Pod và ServiceAccount đã thu ở Mục \ref{subsec:ch3-manual-prep}. Giá trị automount ở Pod được ưu tiên, sau đó mới đến ServiceAccount. Nếu cả hai cấp đều bỏ trống, giá trị mặc định là \texttt{true}. Với projected volume có nguồn \texttt{serviceAccountToken}, đối chiếu \texttt{volumeMounts} của container thường, init và ephemeral. So sánh Pod với mẫu workload để nhận diện mount khai báo riêng. Khi có tham chiếu Secret hoặc audience liên quan, chỉ ghi thông tin cấu hình.
+
+\chapterthreecheckpart{Điều kiện đánh giá}
+Pod không cần API phải tắt automount rõ ràng và không gắn thêm token API. Pod cần API dùng ServiceAccount riêng với quyền RBAC vừa đủ. Token dư thừa hoặc quyền vượt nhu cầu đã xác minh là không đạt. Chuyển thẩm định nếu chưa rõ nhu cầu API, audience hoặc ngoại lệ~\mbox{\parencites[tr.~43--44]{cis-gke-standard-v2}[tr.~29--30]{cis-gke-autopilot-v2}}.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Giá trị automount ở hai cấp, thông tin mount, quyền RBAC và xác nhận của nhóm ứng dụng. Hình \ref{fig:ch3-sa} minh họa workload không cần API.
+
+\chapterthreefigure{ch3-service-account.pdf}{Cấu hình ServiceAccount và token cho workload không cần Kubernetes API}{fig:ch3-sa}
+
+\subsection{Kiểm tra Pod Security}
+
+\chapterthreecheck{4.2.1 -- Thực thi Pod Security Standards trên Standard}
+Pod Security Admission có thể từ chối yêu cầu tạo Pod không đáp ứng mức bảo mật của namespace. Mục 4.2.1 chỉ áp dụng cho GKE Standard.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Từ dữ liệu Namespace ở Mục \ref{subsec:ch3-manual-prep}, đọc nhãn \texttt{pod-security.kubernetes.io/enforce}. Đối chiếu namespace có workload ứng dụng. Loại namespace hệ thống như \texttt{kube-system}, \texttt{kube-public} và \texttt{kube-node-lease} khỏi tập namespace cần kiểm tra.
+
+\chapterthreecheckpart{Điều kiện đánh giá}
+Namespace thuộc phạm vi đạt khi enforce ở mức \texttt{baseline} hoặc \texttt{restricted}. Nhãn bị thiếu, mức \texttt{privileged} hoặc chỉ có \texttt{warn}/\texttt{audit} là không đạt. Nếu chưa rõ namespace có workload ứng dụng hay không, xác nhận phạm vi trước khi kết luận~\mbox{\sourcepage{cis-gke-standard-v2}{60--61}}.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Tên namespace, nhãn enforce và căn cứ đưa vào phạm vi. Trong lab, dự kiến gửi hai manifest bằng \texttt{kubectl create} với \texttt{-{}-dry-run=server} để kiểm tra phản hồi admission. Phép thử dùng quyền \texttt{create} riêng. Ghi phản hồi PSA và phân biệt với lỗi cấu hình hoặc RBAC. Hình \ref{fig:ch3-psa} mô tả phản hồi dự kiến.
+
+\chapterthreefigure{ch3-pod-security.pdf}{Cơ chế Pod Security Admission trên GKE Standard}{fig:ch3-psa}
+
+\chapterthreecheck{4.6.3 -- Tăng cường cấu hình bảo mật của Pod và container}
+Cấu hình bảo mật giới hạn đặc quyền lúc chạy và giảm mức độ ảnh hưởng khi một container bị xâm phạm.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Dùng Pod và mẫu workload từ Mục \ref{subsec:ch3-manual-prep}. Đọc \texttt{securityContext} ở cấp Pod và ở container thường, init, sidecar dạng init hoặc ephemeral. Ở trường hỗ trợ cả hai cấp, cấu hình container được ưu tiên. Với CronJob, đọc mẫu Pod trong \texttt{jobTemplate}.
+
+\chapterthreecheckpart{Điều kiện đánh giá}
+Xác minh \texttt{runAsNonRoot=true}, \texttt{allowPrivilegeEscalation=false} và \texttt{privileged=false}. Rà người dùng lúc chạy và các Linux capabilities đã bỏ hoặc còn cần. Kiểm tra seccomp theo chế độ cụm.
+\begin{itemize}[leftmargin=1.1cm,itemsep=0pt,topsep=3pt]
+  \item Standard dùng \texttt{RuntimeDefault} hoặc hồ sơ tùy chỉnh đã được duyệt.
+  \item Autopilot áp dụng \texttt{RuntimeDefault} khi không khai báo riêng seccomp. Chỉ thiếu trường này không phải vi phạm. \texttt{Localhost} không được hỗ trợ. \texttt{Unconfined} cần ngoại lệ được duyệt.
+\end{itemize}
+Ghi riêng workload thiếu toàn bộ \texttt{securityContext}, chạy root hoặc có đặc quyền rộng. Ghi không đạt khi xác nhận vi phạm mà không có ngoại lệ đã duyệt. Nếu thiếu ngữ cảnh về nhu cầu đặc quyền, chuyển thẩm định~\mbox{\parencites[tr.~89--90]{cis-gke-standard-v2}[tr.~63--64]{cis-gke-autopilot-v2}}.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Tên workload và container, trường bị thiếu hoặc giá trị khai báo và hiệu lực cho thấy rủi ro, nguồn cấu hình và căn cứ ngoại lệ.
+
+\subsection{Kiểm tra NetworkPolicy}
+
+\chapterthreecheck{4.3.1 -- Cơ chế thực thi NetworkPolicy}
+Cơ chế thực thi giúp các NetworkPolicy có hiệu lực trên lưu lượng của Pod.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Từ cấu hình cụm ở Mục \ref{subsec:ch3-manual-prep}, đọc \texttt{networkConfig.\allowbreak datapathProvider} để xác định cách cụm xử lý lưu lượng. Với Standard dùng legacy datapath, đọc thêm cấu hình NetworkPolicy của cụm và add-on.
+
+\chapterthreecheckpart{Điều kiện đánh giá}
+\begin{itemize}[leftmargin=1.1cm,itemsep=0pt,topsep=3pt]
+  \item Standard đạt với \texttt{ADVANCED\_DATAPATH} (Dataplane V2), kể cả khi add-on riêng bị tắt. Với \texttt{LEGACY\_DATAPATH}, cần \texttt{networkPolicy.enabled=true}, provider \texttt{CALICO} và \texttt{disabled=false} trong \texttt{addonsConfig.\allowbreak networkPolicyConfig}.
+  \item Autopilot đạt khi cấu hình xác nhận \texttt{ADVANCED\_DATAPATH}.
+\end{itemize}
+Ghi không đạt khi dữ liệu đầy đủ cho thấy cụm không đáp ứng điều kiện của chế độ tương ứng. Nếu thiếu dữ liệu để xác định cơ chế thực thi, ghi phần chưa xác minh hoặc lỗi truy vấn~\mbox{\parencites[tr.~64--65]{cis-gke-standard-v2}[tr.~46--47]{cis-gke-autopilot-v2}}.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Chế độ cụm, datapath, cấu hình NetworkPolicy và add-on nếu dùng Calico.
+
+\chapterthreecheck{4.3.2 -- Default-deny cho namespace workload trên Standard}
+Default-deny cô lập workload theo mặc định. Các policy cho phép mở lại những đường liên lạc cần thiết.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Với Audit Procedure của CIS, đối chiếu Dataplane V2 hoặc Calico từ cấu hình cụm như ở mục 4.3.1. Với phần mở rộng của đề tài, dùng danh sách NetworkPolicy ở Mục \ref{subsec:ch3-manual-prep} để đọc selector, chiều áp dụng và rule trong từng namespace workload.
+
+\chapterthreecheckpart{Điều kiện đánh giá}
+\begin{itemize}[leftmargin=1.1cm,itemsep=0pt,topsep=3pt]
+  \item Audit Procedure đạt khi cụm có cơ chế thực thi được CIS chấp nhận. Cấu hình đầy đủ nhưng không đáp ứng một trong hai nhánh là không đạt~\mbox{\sourcepage{cis-gke-standard-v2}{67--69}}.
+  \item Phần mở rộng yêu cầu chọn toàn bộ Pod bằng \texttt{podSelector: \{\}}. Khai báo ingress và egress trong \texttt{policyTypes} với tập rule rỗng cho mỗi chiều default-deny. Có thể dùng hai policy riêng. Rà thêm các policy allow vì quyền cho phép được cộng dồn. Thiếu cô lập một chiều hoặc mở ngoài phạm vi được duyệt là không đạt phần mở rộng.
+\end{itemize}
+Nếu thiếu dữ liệu cụm hoặc namespace, ghi riêng phần chưa đánh giá được.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Lưu riêng cấu hình thực thi và kết quả độ phủ từng namespace. Trong kịch bản ở Hình \ref{fig:ch3-netpol}, cho phép egress từ client A đến Pod máy chủ và ingress vào Pod máy chủ từ client A trên cổng HTTP mà backend lắng nghe. Cho phép client cần phân giải tên gửi DNS tới resolver thực tế qua UDP và TCP cổng 53. Nếu Pod resolver bị cô lập ingress, cấp quyền nhận truy vấn DNS từ các client đó.
+
+Sau thay đổi đã duyệt, xác nhận DNS, Service và backend hoạt động trước khi đối chiếu kết quả HTTP của hai client. Kỳ vọng client A kết nối được và client B bị chặn. Phép thử chủ động như \texttt{kubectl exec} dùng quyền lab riêng.
+
+\chapterthreefigure[0.46\textheight]{ch3-network-policy.pdf}{Kịch bản kiểm tra và tăng cường NetworkPolicy trên GKE Standard}{fig:ch3-netpol}
+
+\subsection{Kiểm tra các dịch vụ Google Cloud}
+
+\chapterthreecheck{5.1.1 -- Quét lỗ hổng image bằng Artifact Analysis}
+Artifact Analysis hỗ trợ phát hiện lỗ hổng trong image lưu ở Artifact Registry. Phép kiểm xác nhận tính năng quét được bật cho các kho liên quan.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Đối chiếu danh sách dịch vụ theo project chứa image và cấu hình của từng kho Docker từ Mục \ref{subsec:ch3-manual-prep}. Trong \texttt{vulnerabilityScanningConfig}, dùng \texttt{enablementConfig} để đọc thiết lập, \texttt{enablementState} để xem trạng thái hiệu lực và \texttt{enablementStateReason} để biết nguyên nhân.
+
+\par\smallskip\noindent
+\begin{minipage}{\linewidth}
+\textbf{Điều kiện đánh giá}\par
+\begin{itemize}[leftmargin=1.1cm,itemsep=0pt,topsep=3pt]
+  \item Cấp project cần bật Artifact Registry API (\texttt{artifactregistry.\allowbreak googleapis.com}) và Container Scanning API (\texttt{containerscanning.\allowbreak googleapis.com}). Container Analysis API phục vụ lưu metadata quét.
+  \item Cấp kho cần có scanning hoạt động đối với các kho Docker dùng cho workload trong phạm vi.
+\end{itemize}
+\noindent Đạt khi đáp ứng cả hai lớp. Thiếu API bắt buộc hoặc scanning bị tắt là không đạt. Nếu không đọc được trạng thái hoặc chưa xác định được kho nguồn, ghi lỗi hoặc yêu cầu xác minh. Phép kiểm chưa đánh giá kết quả lỗ hổng của từng image~\mbox{\parencites[tr.~95--96]{cis-gke-standard-v2}[tr.~70--71]{cis-gke-autopilot-v2}}.
+\end{minipage}
+\par
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Project chứa image, API đã bật, tên và vị trí kho, trạng thái quét cùng lý do nếu có.
+
+\chapterthreecheck{5.6.1 Standard / 5.4.1 Autopilot -- Flow Logs và Intranode Visibility}
+VPC Flow Logs ghi thông tin về các luồng mạng. Intranode Visibility đưa lưu lượng giữa các Pod trên cùng node vào đường mạng VPC để có thể quan sát bằng Flow Logs.
+
+\chapterthreecheckpart{Cách kiểm tra}
+\begin{itemize}[leftmargin=1.1cm,itemsep=0pt,topsep=3pt]
+  \item Cấp cụm đọc \texttt{networkConfig.\allowbreak enableIntraNodeVisibility}. Lấy định danh subnet từ \texttt{subnetwork} hoặc \texttt{networkConfig.subnetwork}.
+  \item Cấp subnet đọc \texttt{enableFlowLogs} qua Compute API. Dùng đúng subnet, project và region xác định từ cấu hình cụm ở Mục \ref{subsec:ch3-manual-prep}.
+\end{itemize}
+
+\chapterthreecheckpart{Điều kiện đánh giá}
+Theo đường Audit của hai benchmark, cả hai trường phải là \texttt{true}. Giá trị \texttt{false} hoặc trường bỏ trống trong phản hồi hợp lệ của đúng nguồn cho thấy tính năng chưa bật theo đường kiểm tra này. Nếu truy vấn lỗi hoặc chưa xác định được subnet, chưa thể kết luận. Khi Flow Logs được quản lý qua Network Management API, cần đọc cấu hình hiệu lực ở nguồn đó và xác minh riêng~\mbox{\parencites[tr.~145--146]{cis-gke-standard-v2}[tr.~88--89]{cis-gke-autopilot-v2}}.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Định danh cụm và subnet, hai giá trị quan sát, nguồn API và lỗi đọc nếu có.
+
+\chapterthreecheck{5.6.3 Standard / 5.4.2 Autopilot -- Authorized Networks}
+Authorized Networks giới hạn các nguồn mạng có thể kết nối tới endpoint IP của control plane. Việc xác thực và phân quyền vẫn được xử lý ở các lớp tương ứng.
+
+\chapterthreecheckpart{Cách kiểm tra}
+Đọc loại endpoint và \texttt{masterAuthorizedNetworksConfig} từ cấu hình cụm ở Mục \ref{subsec:ch3-manual-prep}. Đối chiếu các CIDR với danh sách nguồn đã duyệt.
+
+\par\smallskip\noindent
+\begin{minipage}{\linewidth}
+\textbf{Điều kiện đánh giá}\par
+\noindent Đối chiếu ba điều kiện của CIS cho endpoint IP~\mbox{\parencites[tr.~151--153]{cis-gke-standard-v2}[tr.~91--93]{cis-gke-autopilot-v2}}.
+
+{\small\setstretch{1.1}\par\smallskip\noindent
+\begin{tabularx}{\linewidth}{@{}L{5.25cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\tablehead Trường & \tablehead Điều kiện \\
+\midrule
+\texttt{enabled} & Giá trị là \texttt{true}. \\
+\texttt{cidrBlocks} & Có ít nhất một dải được phép. Mọi CIDR trong danh sách đều thuộc nguồn đã duyệt. Không mở toàn bộ Internet qua \texttt{0.0.0.0/0}. \\
+\texttt{gcpPublicCidrsAccessEnabled} & Tắt truy cập từ IP công khai Google Cloud, trừ ngoại lệ được duyệt rõ ràng. \\
+\bottomrule
+\end{tabularx}
+\par
+}
+\end{minipage}
+\par\smallskip
+
+Ghi không đạt khi xác nhận thiếu điều kiện bắt buộc. Nếu chưa đủ dữ liệu về CIDR hoặc ngoại lệ, chuyển xác minh. Với endpoint chỉ dùng DNS, cần kiểm tra bằng chứng tắt endpoint IP và xác nhận tính áp dụng trước khi kết luận.
+
+\chapterthreecheckpart{Lưu ý kỹ thuật}
+Với cấu trúc API mới, đọc đường dẫn sau.\par\nopagebreak[4]
+{\small\noindent\texttt{controlPlaneEndpointsConfig.ipEndpointsConfig.authorizedNetworksConfig}\par}
+Lab kiểm tra thêm \texttt{privateEndpointEnforcementEnabled} để xác nhận danh sách nguồn có hiệu lực trên endpoint nội bộ~\mbox{\parencite{gke-cluster-api}}.
+
+\chapterthreecheckpart{Minh chứng cần thu thập}
+Loại endpoint, trạng thái các trường, CIDR và căn cứ phê duyệt. Phiên đánh giá chỉ đọc cấu hình và dùng đường truy cập đã cấp.
+
+
+\subsection{Bảng tổng hợp kết quả đánh giá thủ công}
+
+{\small\setstretch{1.1}\input{tables/chapter03-manual}}
+
+
+\section{Triển khai tự động hóa (Automation)}
+
+\subsection{Thiết kế công cụ tự động hóa}
+
+CLI \texttt{cis-gke-audit} hiện nhận tham số và hiển thị thông tin cụm. Các bộ thu thập, chuẩn hóa, đánh giá và xuất báo cáo đang ở dạng khung. Hình \ref{fig:ch3-engine} và Bảng \ref{tab:ch3-modules} mô tả thiết kế dự kiến~\mbox{\parencites{project-overview}{project-collaboration}}.
+
+\chapterthreefigure{ch3-audit-engine.pdf}{Kiến trúc thành phần của công cụ CIS GKE Audit}{fig:ch3-engine}
+
+Mỗi phiên dùng một nguồn dữ liệu. Với GKE thật, công cụ xác nhận cụm và chế độ qua GKE API trước khi đọc cấu hình. Trong kiểm thử ngoại tuyến, công cụ lấy cụm và chế độ từ metadata của bộ dữ liệu mẫu (fixture). Cả hai nguồn đi qua cùng quy trình đánh giá, với chỉ dấu \texttt{data\_source} lần lượt là \texttt{live\_gke} hoặc \texttt{fixture}.
+
+{\small\setstretch{1.1}
+\begin{longtable}{@{}L{3.4cm} L{4.6cm} L{6.45cm}@{}}
+\caption{Đầu vào và đầu ra dự kiến của công cụ}\label{tab:ch3-modules}\\
+\toprule
+\tablehead Thành phần & \tablehead Đầu vào & \tablehead Đầu ra \\
+\midrule
+\endfirsthead
+\toprule
+\tablehead Thành phần & \tablehead Đầu vào & \tablehead Đầu ra \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+CLI và xác minh cụm & Thông tin cụm và kube context, hoặc metadata của fixture. & Định danh và chế độ cụm. Với GKE thật, xác nhận context khớp cụm đã chọn. \\
+GcpCollector & Cụm đã xác minh và quyền đọc IAM. & Cấu hình cụm, subnet, dịch vụ và kho image. Ghi lỗi theo nguồn. \\
+K8sCollector & Context đã xác minh và quyền RBAC. & Đối tượng Kubernetes đọc được và lỗi theo loại tài nguyên. \\
+Evidence Normalizer & Phản hồi API hoặc fixture. & Bằng chứng đã lọc, có nguồn và trạng thái dữ liệu. \\
+Rule Registry & Chế độ cụm, phiên bản và phạm vi. & Tập quy tắc của benchmark tương ứng và trạng thái triển khai. \\
+Evaluator & Quy tắc, bằng chứng và xác nhận ngữ cảnh nếu có. & Kết quả kiểm tra kèm lỗi thu thập và độ phủ. \\
+Reporter & Kết quả, cụm và nguồn dữ liệu. & JSON, HTML và tóm tắt trên terminal. \\
+\end{longtable}
+}
+
+Một kết quả kiểm tra (finding) ghi mã CIS, phiên bản benchmark, chế độ và đối tượng. Kết quả nêu trạng thái, lý do và bằng chứng (evidence) đã lọc, kèm nguồn, trường quan sát và thời điểm thu. Nếu còn lỗi hoặc cần người đánh giá thẩm định, thông tin đó được ghi cùng kết quả.
+
+\subsection{Logic kiểm tra các khuyến nghị CIS}
+
+Hình \ref{fig:ch3-eval} mô tả cách xác định trạng thái của một đối tượng. Nếu sai cụm hoặc chế độ, công cụ dừng phiên đánh giá và ghi lỗi. Khi kiểm tra Autopilot, Rule Registry bỏ hai ID chỉ có trên Standard. \texttt{N/A} dùng cho trường hợp đã xác nhận không áp dụng.
+
+\chapterthreefigure{ch3-rule-evaluation.pdf}{Luồng đánh giá một khuyến nghị CIS}{fig:ch3-eval}
+
+Theo đối tượng, ghi \texttt{FAIL} khi có bằng chứng vi phạm và giữ lỗi thu thập đi kèm. Nếu chưa xác nhận vi phạm nhưng lỗi truy vấn làm mất bằng chứng bắt buộc, ghi \texttt{ERROR}. Dùng \texttt{REVIEW} khi cần xác nhận ngữ cảnh hoặc ngoại lệ. Kết luận \texttt{PASS} cần đủ bằng chứng và thẩm định bắt buộc.
+
+Theo khuyến nghị, tổng hợp các đối tượng trong phạm vi của một cụm. Nếu có đối tượng \texttt{FAIL}, ghi \texttt{FAIL} và giữ lỗi cùng các đối tượng chưa đánh giá được. Nếu chưa xác nhận vi phạm, ưu tiên \texttt{ERROR} trước \texttt{REVIEW}. Kết luận \texttt{PASS} cần tất cả đối tượng áp dụng đều đã được đánh giá đầy đủ và đạt.
+
+Độ phủ cho biết đã triển khai bao nhiêu quy tắc áp dụng, đã đọc bao nhiêu đối tượng và đã kết luận được bao nhiêu. Các trường hợp chưa có quy tắc hoặc chưa đọc được được ghi riêng. Nếu lỗi khiến chưa xác định được số đối tượng cần kiểm tra, ghi độ phủ chưa đầy đủ và để trống mẫu số.
+
+Bảng \ref{tab:ch3-rule-map} tóm tắt nguồn dữ liệu và công việc của công cụ cho chín chủ đề. Mục \ref{sec:ch3-manual} trình bày các điều kiện đánh giá.
+
+{\small\setstretch{1.1}\input{tables/chapter03-rule-map}}
+
+\noindent\begin{minipage}{\linewidth}
+\textbf{Ví dụ dữ liệu minh họa giả định.}
+Đầu vào là một đoạn Pod JSON từ fixture. Bộ chuẩn hóa lưu trường quan sát làm bằng chứng. Quy tắc 4.1.4 trên Standard minh họa cách công cụ nhận diện Pod dùng ServiceAccount mặc định và tạo kết quả kiểm tra.
+
+{\chapterthreecodesettings
+\textit{JSON đầu vào}
+\begin{verbatim}
+{"kind":"Pod","metadata":{"namespace":"sa-lab","name":"web-demo"},
+ "spec":{"serviceAccountName":"default"}}
+\end{verbatim}
+\textit{Evidence chuẩn hóa}
+\begin{verbatim}
+{"object":"Pod/sa-lab/web-demo","source":"fixture",
+ "field":"spec.serviceAccountName","value":"default"}
+\end{verbatim}
+\textit{Finding JSON rút gọn}
+\begin{verbatim}
+{"rule_id":"4.1.4","mode":"Standard","benchmark_version":"2.0.0",
+ "object":"Pod/sa-lab/web-demo","assessment_type":"Automated",
+ "data_source":"fixture","status":"FAIL",
+ "reason":"Uses the default ServiceAccount",
+ "evidence":{"field":"spec.serviceAccountName","value":"default"}}
+\end{verbatim}
+}
+\end{minipage}
+
+\subsection{Tự động hóa trên một máy (Local)}
+
+Hình \ref{fig:ch3-local} mô tả kiểm tra một cụm từ máy trạm. Máy trạm cần Python, Application Default Credentials (ADC) cho Google Cloud và kube context của cụm. Người chạy chỉ định project, vị trí, tên cụm và phạm vi namespace. Công cụ dự kiến xác minh cụm trước khi đọc và lưu báo cáo tại máy trạm.
+
+\chapterthreefigure{ch3-local-automation.pdf}{Mô hình tự động đánh giá một cụm từ máy trạm}{fig:ch3-local}
+
+Ví dụ dưới đây dùng các tham số hiện có trong CLI. Thu thập dữ liệu, tuỳ chọn phạm vi và tệp đầu ra JSON/HTML thuộc thiết kế cần hoàn thiện.
+
+{\chapterthreecodesettings
+\begin{verbatim}
+cis-gke-audit audit --project "$PROJECT_ID" \
+  --cluster "$CLUSTER_NAME" --location "$LOCATION" --format json
+\end{verbatim}
+}
+
+Khi nghiệm thu, đối chiếu thông tin cụm, phạm vi, thời điểm và bằng chứng của báo cáo Local với biên bản Manual. Kiểm tra cú pháp và bộ dữ liệu mẫu là bước chuẩn bị trước khi thử qua API thật.
+
+\subsection{Tự động hóa từ xa trên nhiều đối tượng (Remote)}
+
+Hình \ref{fig:ch3-remote} mô tả workflow dự kiến chạy qua \texttt{workflow\_dispatch}. Mỗi cụm trong ma trận có một job riêng với cùng phiên bản CLI. Runner xác minh chế độ cụm rồi xuất tệp báo cáo (artifact) riêng. Tùy chọn \texttt{fail-fast: false} cho phép các job còn lại tiếp tục khi một job lỗi.
+
+\chapterthreefigure{ch3-remote-automation.pdf}{Mô hình đánh giá nhiều cụm từ xa qua GitHub Actions}{fig:ch3-remote}
+
+Runner nhận thông tin xác thực ngắn hạn qua OIDC và Workload Identity Federation (WIF). Quyền tin cậy giới hạn theo repository và ref hoặc môi trường đã duyệt. IAM và RBAC cấp quyền đọc theo phạm vi.
+
+Lab dùng endpoint IP nội bộ nên runner cần đường mạng được phê duyệt, chẳng hạn runner tự quản trong VPC hoặc mạng đã kết nối. Xác nhận định tuyến, phân giải tên khi cần và dải nguồn được phép. Phiên đánh giá giữ nguyên Authorized Networks.
+
+Job tổng hợp đối chiếu danh sách cụm trong ma trận với trạng thái từng job và báo cáo tương ứng, kể cả khi một job lỗi. Job Summary giữ kết quả đã có và ghi rõ lỗi hoặc phần chưa đánh giá do thiếu báo cáo. Trạng thái thực thi của GitHub Actions được ghi riêng với kết luận CIS~\mbox{\parencite{github-workflow-jobs}}.
+
+Nhóm diễn giải “một máy và nhiều máy” theo đối tượng quản trị. Local dùng một máy trạm để kiểm tra một cụm. Remote dùng các job runner để đánh giá nhiều cụm. Số cụm và số job không xác định số máy vật lý. Cách diễn giải này cần giảng viên xác nhận.
+
+\subsection{Thiết kế đầu ra và báo cáo kết quả}
+
+Terminal dự kiến hiển thị tóm tắt phạm vi và lỗi. Báo cáo \texttt{report.json} lưu thông tin cụm, benchmark và nguồn dữ liệu. Kết quả theo đối tượng (\texttt{findings}) và theo khuyến nghị (\texttt{control\_summary}) đi cùng lỗi thu thập và độ phủ. \texttt{report.html} trình bày cùng nội dung. Hình \ref{fig:ch3-html} minh họa bố cục với các ô thống kê để trống.
+
+\chapterthreefigure{ch3-report-mockup.pdf}{Giao diện báo cáo HTML dự kiến}{fig:ch3-html}
+
+{\small\setstretch{1.1}\input{tables/chapter03-automation}}
+
+\paragraph{Kế hoạch kiểm chứng.}
+Nhóm dự kiến dùng fixture để thử năm trạng thái, sai chế độ, sai context, lỗi đọc một phần và lỗi đi kèm vi phạm. Khi có GKE, chạy Manual, Local và Remote trên cùng cụm, cùng phạm vi và cấu hình. Đối chiếu bằng chứng và kết luận sau thẩm định. Ghi thời gian, độ phủ và nhật ký thực tế.
+
+\paragraph{Hai kịch bản tăng cường bảo mật.}
+Mỗi kịch bản bắt đầu bằng baseline audit, xét duyệt thay đổi và sao lưu cấu hình. Với ServiceAccount, chuyển workload sang tài khoản riêng, tắt automount cho Pod không cần API và rà RBAC. Kiểm tra rollout và chức năng ứng dụng. Với NetworkPolicy trên Standard, đặt default-deny và allow chọn lọc, rồi thử HTTP/DNS như Hình \ref{fig:ch3-netpol}. Nếu chức năng lỗi, hoàn nguyên và xác minh khôi phục. Nếu đạt, audit lại cùng phạm vi và so sánh bằng chứng.
+
+Thiết kế và quy trình trên sẽ được thực nghiệm khi có Google Cloud. Minh chứng cần bổ sung gồm log Manual, báo cáo JSON/HTML, artifacts của workflow và bản ghi kiểm thử trước/sau.
+\par\endgroup
